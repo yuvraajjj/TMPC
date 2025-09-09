@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Motion Picture Club</title>
+    <title>The Motion Picture Club, IIM Kashipur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -26,16 +26,13 @@
             height: 50px;
             z-index: 9999;
         }
-        
+
         .custom-cursor.active {
             opacity: 1;
         }
 
         .movie-card {
             position: relative;
-            flex-shrink: 0;
-            width: 180px;
-            height: 270px;
             overflow: hidden;
             border-radius: 8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -81,69 +78,42 @@
         .btn-green {
             @apply bg-green-600 hover:bg-green-700 text-white;
         }
-
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
     </style>
 </head>
-<body class="min-h-screen bg-[#0d0d0d] text-[#f5f5f5]">
+<body class="min-h-screen p-8">
 
     <!-- Custom Cursor Element -->
     <div id="custom-cursor" class="custom-cursor"></div>
 
-    <header class="pt-12 pb-6 px-4 md:px-8 text-center bg-gray-900 shadow-lg">
-        <div class="flex justify-center items-center space-x-4 mb-4">
-            <img src="https://www.iimkashipur.ac.in/page/image/1678950321.jpg" alt="IIM Kashipur Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
-            <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
-        </div>
-        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2 drop-shadow-md">The Motion Picture Club</h1>
-        <h2 class="text-lg md:text-xl text-gray-300 font-medium drop-shadow-sm">IIM Kashipur</h2>
-        <p class="text-sm md:text-md italic text-gray-400 mt-1 drop-shadow-sm">In service of the cinema</p>
-    </header>
-    
     <main class="container mx-auto px-4 md:px-8 py-12">
-        <!-- Navigation Tabs -->
-        <nav class="flex justify-center mb-8 p-1 bg-gray-800 rounded-full shadow-inner">
-            <button id="tab-movies" class="px-6 py-2 rounded-full font-bold bg-blue-600 text-white transition-colors duration-200">Movies</button>
-            <button id="tab-series" class="px-6 py-2 rounded-full font-bold text-gray-300 hover:bg-gray-700 transition-colors duration-200">Series</button>
-            <button id="tab-anime" class="px-6 py-2 rounded-full font-bold text-gray-300 hover:bg-gray-700 transition-colors duration-200">Anime</button>
-        </nav>
+        <header class="text-center mb-12">
+            <!-- Logos -->
+            <div class="flex justify-center items-center space-x-4 mb-4">
+                <img src="https://www.iimkashipur.ac.in/page/image/1678950321.jpg" alt="IIM Kashipur Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+                <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
+            <h2 class="text-lg md:text-xl text-gray-400 font-medium">IIM Kashipur</h2>
+            <p class="text-sm md:text-md italic text-gray-500 mt-1">In service of the cinema</p>
+        </header>
 
         <!-- Search Bar -->
         <div class="mb-8 p-4 bg-gray-800 rounded-lg shadow-inner">
-            <input type="text" id="search-input" placeholder="Search for a title..." class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <input type="text" id="search-input" placeholder="Search for a movie..." class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
         </div>
-
-        <!-- Content Sections -->
-        <section id="section-movies">
-            <div id="movies-container" class="space-y-8">
-                <div id="loading-movies" class="text-white text-center text-lg col-span-full">
+        
+        <!-- Public Movie Database from Google Sheets -->
+        <section id="google-sheet-section">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Explore Movies</h2>
+            <div id="google-sheet-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                <div id="loading" class="text-white text-center text-lg col-span-full">
                     <p>Loading movies from Google Sheet...</p>
                 </div>
+                <!-- Movies from Google Sheet will be dynamically added here -->
             </div>
         </section>
 
-        <section id="section-series" class="hidden">
-            <div id="series-container" class="space-y-8">
-                <div id="loading-series" class="text-white text-center text-lg col-span-full">
-                    <p>Loading series from Google Sheet...</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="section-anime" class="hidden">
-            <div id="anime-container" class="space-y-8">
-                <div id="loading-anime" class="text-white text-center text-lg col-span-full">
-                    <p>Loading anime from Google Sheet...</p>
-                </div>
-            </div>
-        </section>
-        
         <!-- Watchlist Section -->
         <section class="mt-12">
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Your Watchlist</h2>
@@ -163,28 +133,17 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        let allContent = [];
-        let activeTab = 'movies';
+        let allMovies = [];
 
         // --- Constants ---
+        // IMPORTANT: Replace this URL with the published CSV URL of your Google Sheet
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
         
         // --- DOM Elements ---
-        const moviesContainer = document.getElementById('movies-container');
-        const seriesContainer = document.getElementById('series-container');
-        const animeContainer = document.getElementById('anime-container');
+        const googleSheetContainer = document.getElementById('google-sheet-container');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
-        const moviesSection = document.getElementById('section-movies');
-        const seriesSection = document.getElementById('section-series');
-        const animeSection = document.getElementById('section-anime');
-        const tabMovies = document.getElementById('tab-movies');
-        const tabSeries = document.getElementById('tab-series');
-        const tabAnime = document.getElementById('tab-anime');
-        const loadingMovies = document.getElementById('loading-movies');
-        const loadingSeries = document.getElementById('loading-series');
-        const loadingAnime = document.getElementById('loading-anime');
 
         // --- Firebase Initialization and Authentication ---
         let db, auth, userId;
@@ -221,6 +180,7 @@
         const addMovieToWatchlist = async (movie) => {
             try {
                 const watchlistRef = getWatchlistCollectionRef();
+                // Store the movie details, including the Drive_URL
                 await addDoc(watchlistRef, movie);
                 console.log("Movie added to watchlist!");
             } catch (e) {
@@ -232,16 +192,14 @@
             const watchlistRef = getWatchlistCollectionRef();
             onSnapshot(watchlistRef, (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderWatchlistCards(movies, watchlistContainer);
+                renderMovies(movies, watchlistContainer, false);
             });
         };
 
         // --- Google Sheets Data Fetching ---
-        const fetchContentFromGoogleSheet = async () => {
+        const fetchMoviesFromGoogleSheet = async () => {
             if (GOOGLE_SHEET_URL === "YOUR_GOOGLE_SHEET_URL_HERE") {
-                if (loadingMovies) loadingMovies.textContent = "Please set the Google Sheet URL in the code.";
-                if (loadingSeries) loadingSeries.textContent = "Please set the Google Sheet URL in the code.";
-                if (loadingAnime) loadingAnime.textContent = "Please set the Google Sheet URL in the code.";
+                document.getElementById('loading').textContent = "Please set the Google Sheet URL in the code.";
                 return;
             }
 
@@ -251,18 +209,12 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const csvText = await response.text();
-                allContent = parseCSV(csvText);
-                
-                if (loadingMovies) loadingMovies.remove();
-                if (loadingSeries) loadingSeries.remove();
-                if (loadingAnime) loadingAnime.remove();
-
-                renderCategories(allContent);
+                allMovies = parseCSV(csvText);
+                document.getElementById('loading').remove();
+                renderMovies(allMovies, googleSheetContainer, true);
             } catch (error) {
-                console.error("Error fetching content from Google Sheet:", error);
-                if (loadingMovies) loadingMovies.textContent = "Failed to load content. Check the URL.";
-                if (loadingSeries) loadingSeries.textContent = "Failed to load content. Check the URL.";
-                if (loadingAnime) loadingAnime.textContent = "Failed to load content. Check the URL.";
+                console.error("Error fetching movies from Google Sheet:", error);
+                document.getElementById('loading').textContent = "Failed to load movies. Check the URL.";
             }
         };
 
@@ -271,222 +223,79 @@
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const data = lines.slice(1).map(line => {
                 const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-                let content = {};
+                let movie = {};
                 headers.forEach((header, i) => {
-                    content[header] = values[i];
+                    movie[header] = values[i];
                 });
-                return content;
+                return movie;
             });
             return data;
         };
-
-        const renderCategories = (content) => {
-            const movies = content.filter(item => item.Type && item.Type.toLowerCase() === 'movie');
-            const series = content.filter(item => item.Type && item.Type.toLowerCase() === 'series');
-            const anime = content.filter(item => item.Type && item.Type.toLowerCase() === 'anime');
-            
-            renderGenreRows(movies, moviesContainer, 'movie');
-            renderGenreRows(series, seriesContainer, 'series');
-            renderGenreRows(anime, animeContainer, 'anime');
-        };
-
-        const renderGenreRows = (content, container, type) => {
+        
+        // --- UI Rendering Functions ---
+        const renderMovies = (movies, container, showAddButton) => {
             container.innerHTML = '';
             
-            if (content.length === 0) {
-                const message = `<p class="text-center text-gray-400 col-span-full">No ${type} found.</p>`;
-                container.innerHTML = message;
+            if (movies.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400">No movies found.</p>`;
                 return;
             }
 
-            const topPicks = content.filter(item => item.Top_Pick && item.Top_Pick.toLowerCase() === 'yes');
-            const otherGenres = content.filter(item => item.Genre && item.Genre !== 'undefined' && item.Genre.trim() !== '' && (item.Top_Pick === undefined || item.Top_Pick.toLowerCase() !== 'yes'));
-
-            if (topPicks.length > 0) {
-                const topPicksContainer = createGenreSection("TMPC Top Picks of the Month", topPicks);
-                container.appendChild(topPicksContainer);
-            }
-
-            const uniqueGenres = [...new Set(otherGenres.map(item => item.Genre))];
-            
-            uniqueGenres.forEach(genre => {
-                const genreContent = otherGenres.filter(item => item.Genre === genre);
-                const genreContainer = createGenreSection(genre, genreContent);
-                container.appendChild(genreContainer);
-            });
-        };
-        
-        const createGenreSection = (title, content) => {
-            const section = document.createElement('div');
-            section.classList.add('genre-section');
-            
-            const sectionTitle = document.createElement('h2');
-            sectionTitle.classList.add('text-xl', 'md:text-2xl', 'font-bold', 'text-white', 'mb-4', 'mt-8');
-            sectionTitle.textContent = title;
-            
-            const cardsContainer = document.createElement('div');
-            cardsContainer.classList.add('flex', 'space-x-4', 'overflow-x-scroll', 'py-4', 'scrollbar-hide');
-            
-            content.forEach(item => {
-                const card = createCard(item, true);
-                cardsContainer.appendChild(card);
-            });
-            
-            section.appendChild(sectionTitle);
-            section.appendChild(cardsContainer);
-            return section;
-        };
-
-        const createCard = (item, showAddButton) => {
-            const card = document.createElement('div');
-            card.classList.add('movie-card');
-            
-            const posterPath = item.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
-            const releaseYear = item.Release_Date || 'N/A';
-
-            card.innerHTML = `
-                <img src="${posterPath}" alt="${item.Title} Poster">
-                <div class="movie-info p-4">
-                    <h3 class="text-lg font-semibold truncate">${item.Title}</h3>
-                    <p class="text-sm text-gray-400 mb-2">${releaseYear}</p>
-                    ${showAddButton ? `
-                        <div class="flex space-x-2">
-                            <button class="add-btn btn btn-blue flex-1">Add</button>
-                            ${item.Drive_URL ? `<a href="${item.Drive_URL}" target="_blank" class="btn btn-green block text-center flex-1">Watch</a>` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            
-            if (showAddButton) {
-                const addButton = card.querySelector('.add-btn');
-                addButton.addEventListener('click', () => {
-                    addMovieToWatchlist({
-                        title: item.Title || null,
-                        release_date: item.Release_Date || null,
-                        poster_path: item.Poster_URL || null,
-                        drive_url: item.Drive_URL || null,
-                        type: item.Type || null
+            movies.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+                
+                const posterPath = movie.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
+                const releaseYear = movie.Release_Date || 'N/A';
+                
+                movieCard.innerHTML = `
+                    <img src="${posterPath}" alt="${movie.Title} Poster">
+                    <div class="movie-info p-4">
+                        <h3 class="text-lg font-semibold truncate">${movie.Title}</h3>
+                        <p class="text-sm text-gray-400 mb-2">${releaseYear}</p>
+                        ${showAddButton ? `
+                            <div class="flex space-x-2">
+                                <button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>
+                                ${movie.Drive_URL ? `<a href="${movie.Drive_URL}" target="_blank" class="btn btn-green block text-center flex-1">Watch Now</a>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                if (showAddButton) {
+                    const addButton = movieCard.querySelector('.add-btn');
+                    addButton.addEventListener('click', () => {
+                        addMovieToWatchlist({
+                            title: movie.Title || null,
+                            release_date: movie.Release_Date || null,
+                            poster_path: movie.Poster_URL || null,
+                            drive_url: movie.Drive_URL || null
+                        });
                     });
-                });
-            }
-            return card;
-        };
-
-        const renderWatchlistCards = (content, container) => {
-             container.innerHTML = '';
-            if (content.length === 0) {
-                 const message = `<p class="text-center text-gray-400 col-span-full">Your watchlist is empty.</p>`;
-                container.innerHTML = message;
-                return;
-            }
-            content.forEach(item => {
-                const card = createCard(item, false);
-                container.appendChild(card);
+                }
+                
+                container.appendChild(movieCard);
             });
         };
-        
+
         // --- Search Functionality ---
-        const filterContent = () => {
+        const filterMovies = () => {
             const query = searchInput.value.toLowerCase();
-            let filteredMovies = [];
-            let filteredSeries = [];
-            let filteredAnime = [];
-
-            if (query === '') {
-                 renderCategories(allContent);
-                 return;
-            }
-
-            const allFiltered = allContent.filter(item => item.Title.toLowerCase().includes(query));
-
-            filteredMovies = allFiltered.filter(item => item.Type && item.Type.toLowerCase() === 'movie');
-            filteredSeries = allFiltered.filter(item => item.Type && item.Type.toLowerCase() === 'series');
-            filteredAnime = allFiltered.filter(item => item.Type && item.Type.toLowerCase() === 'anime');
-
-            const filteredMovieContainer = document.createElement('div');
-            filteredMovieContainer.id = 'filtered-movies';
-            moviesContainer.innerHTML = '';
-            if (filteredMovies.length > 0) {
-                 const heading = document.createElement('h2');
-                 heading.textContent = 'Filtered Movies';
-                 heading.classList.add('text-2xl', 'font-bold', 'text-white', 'mb-6');
-                 moviesContainer.appendChild(heading);
-                 const cardsContainer = createGenreSection('Search Results', filteredMovies);
-                 moviesContainer.appendChild(cardsContainer);
-            } else {
-                 moviesContainer.innerHTML = '<p class="text-center text-gray-400">No movies found.</p>';
-            }
-
-            const filteredSeriesContainer = document.createElement('div');
-            filteredSeriesContainer.id = 'filtered-series';
-            seriesContainer.innerHTML = '';
-             if (filteredSeries.length > 0) {
-                const heading = document.createElement('h2');
-                heading.textContent = 'Filtered Series';
-                heading.classList.add('text-2xl', 'font-bold', 'text-white', 'mb-6');
-                seriesContainer.appendChild(heading);
-                const cardsContainer = createGenreSection('Search Results', filteredSeries);
-                seriesContainer.appendChild(cardsContainer);
-             } else {
-                seriesContainer.innerHTML = '<p class="text-center text-gray-400">No series found.</p>';
-            }
-            
-            const filteredAnimeContainer = document.createElement('div');
-            filteredAnimeContainer.id = 'filtered-anime';
-            animeContainer.innerHTML = '';
-            if (filteredAnime.length > 0) {
-                 const heading = document.createElement('h2');
-                 heading.textContent = 'Filtered Anime';
-                 heading.classList.add('text-2xl', 'font-bold', 'text-white', 'mb-6');
-                 animeContainer.appendChild(heading);
-                 const cardsContainer = createGenreSection('Search Results', filteredAnime);
-                 animeContainer.appendChild(cardsContainer);
-            } else {
-                 animeContainer.innerHTML = '<p class="text-center text-gray-400">No anime found.</p>';
-            }
+            const filteredMovies = allMovies.filter(movie => {
+                return movie.Title.toLowerCase().includes(query);
+            });
+            renderMovies(filteredMovies, googleSheetContainer, true);
         };
         
-        // --- Tab Switching Logic ---
-        const showTab = (tabId) => {
-            activeTab = tabId;
-            moviesSection.classList.add('hidden');
-            seriesSection.classList.add('hidden');
-            animeSection.classList.add('hidden');
-            
-            tabMovies.classList.remove('bg-blue-600', 'text-white');
-            tabSeries.classList.remove('bg-blue-600', 'text-white');
-            tabAnime.classList.remove('bg-blue-600', 'text-white');
-            tabMovies.classList.add('bg-gray-700', 'text-gray-300');
-            tabSeries.classList.add('bg-gray-700', 'text-gray-300');
-            tabAnime.classList.add('bg-gray-700', 'text-gray-300');
-            
-            if (tabId === 'movies') {
-                moviesSection.classList.remove('hidden');
-                tabMovies.classList.replace('bg-gray-700', 'bg-blue-600');
-                tabMovies.classList.replace('text-gray-300', 'text-white');
-            } else if (tabId === 'series') {
-                seriesSection.classList.remove('hidden');
-                tabSeries.classList.replace('bg-gray-700', 'bg-blue-600');
-                tabSeries.classList.replace('text-gray-300', 'text-white');
-            } else if (tabId === 'anime') {
-                animeSection.classList.remove('hidden');
-                tabAnime.classList.replace('bg-gray-700', 'bg-blue-600');
-                tabAnime.classList.replace('text-gray-300', 'text-white');
-            }
-        };
-
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
-            fetchContentFromGoogleSheet();
+            fetchMoviesFromGoogleSheet();
             
-            tabMovies.addEventListener('click', () => showTab('movies'));
-            tabSeries.addEventListener('click', () => showTab('series'));
-            tabAnime.addEventListener('click', () => showTab('anime'));
-            
-            searchInput.addEventListener('keyup', filterContent);
+            // Search input listener
+            searchInput.addEventListener('keyup', filterMovies);
 
+            // Custom cursor logic
             document.addEventListener('mousemove', (e) => {
                 customCursor.style.left = `${e.clientX}px`;
                 customCursor.style.top = `${e.clientY}px`;
@@ -501,4 +310,3 @@
     </script>
 </body>
 </html>
-
