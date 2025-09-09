@@ -237,6 +237,7 @@
             { title: "Chernobyl", poster_path: "https://m.media-amazon.com/images/M/MV5BZDg5ZmY0ZmMtMjA2Yi00MTY2LWI3YzEtZmY4ZjI4ZWRiYjM3XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_QL75_UX190_CR0,0,190,281_.jpg" },
             { title: "Narcos", poster_path: "https://m.media-amazon.com/images/M/MV5BMmM2YmY1ZDgtY2IyMC00YjUxLWEwYzEtMmM2MTIxZjU5ODZkXkEyXkFqcGdeQXVyMTQ4OTcxMTg@._V1_QL75_UX190_CR0,0,190,281_.jpg" }
         ];
+        let currentPage = 'movies'; // Global variable to track the current page
 
         // --- Constants ---
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
@@ -247,6 +248,7 @@
         const watchlistPage = document.getElementById('watchlist-page');
         const topPicksCarousel = document.getElementById('top-picks-carousel');
         const topHorrorCarousel = document.getElementById('top-horror-carousel');
+        const seriesCarousel = document.getElementById('series-carousel');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
@@ -349,8 +351,6 @@
         // --- Data Fetching & Parsing ---
         const fetchMoviesFromGoogleSheet = async () => {
             if (GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_URL_HERE")) {
-                // If the URL is the placeholder, we still want to render the page
-                // so the user can interact with the Series page and Watchlist.
                 renderTopPicks([], topPicksCarousel);
                 renderCarousel([], topHorrorCarousel, true);
                 return;
@@ -388,10 +388,9 @@
             return data;
         };
 
-        const renderSeries = () => {
-            const seriesCarousel = document.getElementById('series-carousel');
+        const renderSeries = (filteredSeries = seriesData) => {
             seriesCarousel.innerHTML = '';
-            seriesData.forEach(series => {
+            filteredSeries.forEach(series => {
                 const seriesCard = createMovieCard(series, true, true);
                 seriesCarousel.appendChild(seriesCard);
             });
@@ -490,6 +489,7 @@
             const pages = document.querySelectorAll('.page-content');
             pages.forEach(page => page.classList.add('hidden'));
             document.getElementById(`${pageName}-page`).classList.remove('hidden');
+            currentPage = pageName;
             if (pageName === 'series') {
                 renderSeries();
             }
@@ -497,9 +497,17 @@
 
         // --- Search Functionality ---
         const filterMovies = () => {
-            // The search bar no longer serves a purpose since the main "Explore" section was removed.
-            // I've kept the function here in case you want to re-purpose it later.
-            // Currently, it does nothing.
+            const query = searchInput.value.toLowerCase();
+            if (currentPage === 'movies') {
+                const filteredTopPicks = allMovies.slice(0, 10).filter(movie => movie.Title.toLowerCase().includes(query));
+                renderTopPicks(filteredTopPicks, topPicksCarousel);
+
+                const filteredTopHorror = allMovies.filter(movie => movie.Genre === 'Horror' && movie.Title.toLowerCase().includes(query));
+                renderCarousel(filteredTopHorror, topHorrorCarousel, true);
+            } else if (currentPage === 'series') {
+                const filteredSeries = seriesData.filter(series => series.title.toLowerCase().includes(query));
+                renderSeries(filteredSeries);
+            }
         };
 
         // --- Carousel Scroll Functionality ---
