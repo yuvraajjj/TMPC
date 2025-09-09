@@ -33,9 +33,15 @@
 
         .movie-card {
             position: relative;
-            overflow: hidden;
-            border-radius: 8px;
+            flex-shrink: 0;
+            width: 150px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .movie-card {
+                width: 200px;
+            }
         }
         
         .movie-card:hover {
@@ -48,7 +54,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            border-radius: 8px;
         }
         
         .movie-info {
@@ -61,6 +67,7 @@
             padding: 1rem;
             transform: translateY(100%);
             transition: transform 0.3s ease;
+            border-radius: 0 0 8px 8px;
         }
         
         .movie-card:hover .movie-info {
@@ -77,6 +84,50 @@
 
         .btn-green {
             @apply bg-green-600 hover:bg-green-700 text-white;
+        }
+
+        .btn-red {
+            @apply bg-red-600 hover:bg-red-700 text-white;
+        }
+
+        .carousel-container {
+            position: relative;
+        }
+
+        .carousel-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 20;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .carousel-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .left-btn { left: 0; }
+        .right-btn { right: 0; }
+
+        .rating-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px 0 8px 0;
+            font-size: 1.5rem;
         }
     </style>
 </head>
@@ -96,54 +147,105 @@
             <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
             <h2 class="text-lg md:text-xl text-gray-400 font-medium">IIM Kashipur</h2>
             <p class="text-sm md:text-md italic text-gray-500 mt-1">In service of the cinema</p>
+            <p id="user-id-display" class="mt-4 text-xs text-gray-500"></p>
         </header>
+
+        <!-- Navigation -->
+        <nav class="flex justify-center space-x-6 mb-8">
+            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('movies')">Movies</button>
+            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('series')">Series</button>
+        </nav>
 
         <!-- Search Bar -->
         <div class="mb-8 p-4 bg-gray-800 rounded-lg shadow-inner">
             <input type="text" id="search-input" placeholder="Search for a movie..." class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
         </div>
-        
-        <!-- Public Movie Database from Google Sheets -->
-        <section id="google-sheet-section">
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Explore Movies</h2>
-            <div id="google-sheet-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                <div id="loading" class="text-white text-center text-lg col-span-full">
-                    <p>Loading movies from Google Sheet...</p>
-                </div>
-                <!-- Movies from Google Sheet will be dynamically added here -->
-            </div>
-        </section>
 
-        <!-- Watchlist Section -->
-        <section class="mt-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Your Watchlist</h2>
-            <div id="watchlist-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                <!-- Watchlist movies will be dynamically added here -->
-            </div>
-        </section>
+        <!-- --- Home Page Content --- -->
+        <div id="movies-page" class="page-content">
+            <!-- TMPC Top 10 Picks Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">TMPC Top 10 Picks</h2>
+                <div id="top-picks-container" class="carousel-container relative">
+                    <div id="top-picks-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Top 10 movies will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('top-picks-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('top-picks-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+        
+            <!-- Public Movie Database from Google Sheets -->
+            <section id="google-sheet-section">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Explore Movies</h2>
+                <div id="google-sheet-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    <div id="loading-movies" class="text-white text-center text-lg col-span-full">
+                        <p>Loading movies from Google Sheet...</p>
+                    </div>
+                    <!-- Movies from Google Sheet will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Watchlist Section -->
+            <section class="mt-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Your Watchlist</h2>
+                <div id="watchlist-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    <!-- Watchlist movies will be dynamically added here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- --- Series Page Content --- -->
+        <div id="series-page" class="page-content hidden">
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Popular Series</h2>
+                <div id="series-container" class="carousel-container relative">
+                    <div id="series-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Series will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('series-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('series-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, addDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, setDoc, deleteDoc, onSnapshot, collection, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Global Variables ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         let allMovies = [];
+        let seriesData = [
+            { title: "Breaking Bad", poster_path: "https://m.media-amazon.com/images/M/MV5BNDkyZWRkY2MtYmYzYS00YWI0LTg4Y2UtZjE1YzE2YmY1ZDc3XkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_QL75_UY281_CR140,0,188,281_.jpg" },
+            { title: "The Office", poster_path: "https://m.media-amazon.com/images/M/MV5BYzAwZDEzNmYtYzI5Mi00ODVjLTk5ZDMtZGI4YTUzYmJkNmE4XkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UY281_CR1,0,188,281_.jpg" },
+            { title: "Stranger Things", poster_path: "https://m.media-amazon.com/images/M/MV5BN2RjYThmOGItYjAzOC00ZWEzLWIwZTQtZTM4ZjUwNTk2NzAxXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UX190_CR0,4,190,281_.jpg" },
+            { title: "The Queen's Gambit", poster_path: "https://m.media-amazon.com/images/M/MV5BMjkwMzE5ODMtMjhhNy00YmU0LTk0ZTYtODJmMDNlMTYxYjU5XkEyXkFqcGdeQXVyMDY2MDc4NA@@._V1_QL75_UX190_CR0,0,190,281_.jpg" },
+            { title: "The Last of Us", poster_path: "https://m.media-amazon.com/images/M/MV5BZDU1NGY0ZDMtYmU5Yi00M2VhLThjYWMtOGU0ZWM3NjVjMWE5XkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UX190_CR0,4,190,281_.jpg" },
+            { title: "Loki", poster_path: "https://m.media-amazon.com/images/M/MV5BODg3ZjI2OTEtMGM1NS00ZWIxLThhZTgtNWZhNjJjMDliM2MxXkEyXkFqcGdeQXVyMTE0MzQwMDM2._V1_QL75_UX190_CR0,4,190,281_.jpg" },
+            { title: "Game of Thrones", poster_path: "https://m.media-amazon.com/images/M/MV5BODg1NmI5MTYtN2IyMC00NWU5LTlmYzMtM2M5YzlmMzc3ZjU3XkEyXkFqcGdeQXVyMTI3MDk3NTgw._V1_QL75_UX190_CR0,4,190,281_.jpg" },
+            { title: "Friends", poster_path: "https://m.media-amazon.com/images/M/MV5BNDVkYjU0MzctMWRmZi00NTFlLWJjZjUtNjc2ZTgwNGE4ODFmXkEyXkFqcGdeQXVyNDg4NjY5OTQ@._V1_QL75_UX190_CR0,2,190,281_.jpg" },
+            { title: "Chernobyl", poster_path: "https://m.media-amazon.com/images/M/MV5BZDg5ZmY0ZmMtMjA2Yi00MTY2LWI3YzEtZmY4ZjI4ZWRiYjM3XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_QL75_UX190_CR0,0,190,281_.jpg" },
+            { title: "Narcos", poster_path: "https://m.media-amazon.com/images/M/MV5BMmM2YmY1ZDgtY2IyMC00YjUxLWEwYzEtMmM2MTIxZjU5ODZkXkEyXkFqcGdeQXVyMTQ4OTcxMTg@._V1_QL75_UX190_CR0,0,190,281_.jpg" }
+        ];
 
         // --- Constants ---
-        // IMPORTANT: Replace this URL with the published CSV URL of your Google Sheet
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
         
         // --- DOM Elements ---
+        const moviesPage = document.getElementById('movies-page');
+        const seriesPage = document.getElementById('series-page');
+        const topPicksCarousel = document.getElementById('top-picks-carousel');
         const googleSheetContainer = document.getElementById('google-sheet-container');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
+        const userIdDisplay = document.getElementById('user-id-display');
 
         // --- Firebase Initialization and Authentication ---
         let db, auth, userId;
@@ -157,14 +259,17 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
+                        userIdDisplay.textContent = `User ID: ${userId}`;
+                        console.log(`Authenticated user with ID: ${userId}`);
                         setupWatchlistListener();
+                    } else {
+                        console.log("No authenticated user found, signing in anonymously...");
+                        await signInAnonymously(auth);
                     }
                 });
 
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
@@ -174,35 +279,68 @@
         // --- Firestore Functions ---
         const getWatchlistCollectionRef = () => {
             const path = `/artifacts/${appId}/users/${userId}/watchlist`;
+            console.log(`Accessing Firestore path: ${path}`);
             return collection(db, path);
         };
         
         const addMovieToWatchlist = async (movie) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot add movie to watchlist.");
+                return;
+            }
             try {
                 const watchlistRef = getWatchlistCollectionRef();
-                // Store the movie details, including the Drive_URL
-                await addDoc(watchlistRef, movie);
+                // Use a unique ID for the document to prevent duplicates
+                const docRef = doc(watchlistRef, movie.title);
+                
+                await setDoc(docRef, {
+                    title: movie.title || null,
+                    release_date: movie.release_date || null,
+                    poster_path: movie.poster_path || null,
+                    drive_url: movie.drive_url || null
+                });
                 console.log("Movie added to watchlist!");
             } catch (e) {
-                console.error("Error adding document: ", e);
+                console.error("Error adding document:", e);
+            }
+        };
+
+        const removeMovieFromWatchlist = async (movieId) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot remove movie from watchlist.");
+                return;
+            }
+            try {
+                const watchlistRef = getWatchlistCollectionRef();
+                const movieDocRef = doc(watchlistRef, movieId);
+                await deleteDoc(movieDocRef);
+                console.log("Movie removed from watchlist!");
+            } catch (e) {
+                console.error("Error removing document:", e);
             }
         };
         
         const setupWatchlistListener = () => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot set up watchlist listener.");
+                return;
+            }
             const watchlistRef = getWatchlistCollectionRef();
             onSnapshot(watchlistRef, (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMovies(movies, watchlistContainer, false);
+            }, (error) => {
+                console.error("Error listening to watchlist:", error);
+                watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Error loading your watchlist. Please check your Firebase permissions for the path logged in the console.</p>`;
             });
         };
 
-        // --- Google Sheets Data Fetching ---
+        // --- Data Fetching & Parsing ---
         const fetchMoviesFromGoogleSheet = async () => {
-            if (GOOGLE_SHEET_URL === "YOUR_GOOGLE_SHEET_URL_HERE") {
-                document.getElementById('loading').textContent = "Please set the Google Sheet URL in the code.";
+            if (GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_URL_HERE")) {
+                document.getElementById('loading-movies').textContent = "Please set the Google Sheet URL in the code.";
                 return;
             }
-
             try {
                 const response = await fetch(GOOGLE_SHEET_URL);
                 if (!response.ok) {
@@ -210,11 +348,12 @@
                 }
                 const csvText = await response.text();
                 allMovies = parseCSV(csvText);
-                document.getElementById('loading').remove();
+                document.getElementById('loading-movies').remove();
+                renderTopPicks(allMovies.slice(0, 10), topPicksCarousel);
                 renderMovies(allMovies, googleSheetContainer, true);
             } catch (error) {
                 console.error("Error fetching movies from Google Sheet:", error);
-                document.getElementById('loading').textContent = "Failed to load movies. Check the URL.";
+                document.getElementById('loading-movies').textContent = "Failed to load movies. Check the URL.";
             }
         };
 
@@ -231,66 +370,125 @@
             });
             return data;
         };
+
+        const renderSeries = () => {
+            const seriesCarousel = document.getElementById('series-carousel');
+            seriesCarousel.innerHTML = '';
+            seriesData.forEach(series => {
+                const seriesCard = createMovieCard(series, true, true);
+                seriesCarousel.appendChild(seriesCard);
+            });
+        };
         
         // --- UI Rendering Functions ---
+        const createMovieCard = (item, isCarousel = false, isSeries = false, rank = null) => {
+            const movieCard = document.createElement('div');
+            movieCard.classList.add('movie-card', 'rounded-lg', 'overflow-hidden');
+            if (isCarousel) {
+                movieCard.classList.add('snap-start');
+            }
+
+            const posterPath = item.poster_path || item.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
+            const title = item.title || item.Title || 'Untitled';
+            const releaseYear = item.release_date || item.Release_Date || 'N/A';
+            const driveUrl = item.drive_url || item.Drive_URL || null;
+            const isWatchlist = movieCard.parentNode === watchlistContainer;
+
+            movieCard.innerHTML = `
+                <img src="${posterPath}" alt="${title} Poster" class="rounded-lg w-full h-auto">
+                ${rank ? `<div class="rating-overlay">${rank}</div>` : ''}
+                <div class="movie-info p-4">
+                    <h3 class="text-lg font-semibold truncate">${title}</h3>
+                    <p class="text-sm text-gray-400 mb-2">${releaseYear}</p>
+                    <div class="flex flex-col space-y-2">
+                        ${!isSeries && !isWatchlist ? `
+                            <button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>
+                        ` : ''}
+                        ${isWatchlist ? `
+                            <button class="remove-btn btn btn-red flex-1">Remove</button>
+                        ` : ''}
+                        ${driveUrl ? `<a href="${driveUrl}" target="_blank" class="btn btn-green block text-center flex-1">Watch Now</a>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (!isSeries && !isWatchlist) {
+                const addButton = movieCard.querySelector('.add-btn');
+                if (addButton) {
+                    addButton.addEventListener('click', () => {
+                        addMovieToWatchlist({
+                            title: item.Title || null,
+                            release_date: item.Release_Date || null,
+                            poster_path: item.Poster_URL || null,
+                            drive_url: item.Drive_URL || null
+                        });
+                    });
+                }
+            } else if (isWatchlist) {
+                const removeButton = movieCard.querySelector('.remove-btn');
+                if (removeButton) {
+                    removeButton.addEventListener('click', () => {
+                        removeMovieFromWatchlist(item.id);
+                    });
+                }
+            }
+            
+            return movieCard;
+        };
+        
         const renderMovies = (movies, container, showAddButton) => {
             container.innerHTML = '';
             
             if (movies.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400">No movies found.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 col-span-full">No movies found.</p>`;
                 return;
             }
 
             movies.forEach(movie => {
-                const movieCard = document.createElement('div');
-                movieCard.classList.add('movie-card');
-                
-                const posterPath = movie.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
-                const releaseYear = movie.Release_Date || 'N/A';
-                
-                movieCard.innerHTML = `
-                    <img src="${posterPath}" alt="${movie.Title} Poster">
-                    <div class="movie-info p-4">
-                        <h3 class="text-lg font-semibold truncate">${movie.Title}</h3>
-                        <p class="text-sm text-gray-400 mb-2">${releaseYear}</p>
-                        ${showAddButton ? `
-                            <div class="flex space-x-2">
-                                <button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>
-                                ${movie.Drive_URL ? `<a href="${movie.Drive_URL}" target="_blank" class="btn btn-green block text-center flex-1">Watch Now</a>` : ''}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                
-                if (showAddButton) {
-                    const addButton = movieCard.querySelector('.add-btn');
-                    addButton.addEventListener('click', () => {
-                        addMovieToWatchlist({
-                            title: movie.Title || null,
-                            release_date: movie.Release_Date || null,
-                            poster_path: movie.Poster_URL || null,
-                            drive_url: movie.Drive_URL || null
-                        });
-                    });
-                }
-                
+                const movieCard = createMovieCard(movie);
                 container.appendChild(movieCard);
             });
+        };
+
+        const renderTopPicks = (movies, container) => {
+            container.innerHTML = '';
+            movies.forEach((movie, index) => {
+                const movieCard = createMovieCard(movie, true, false, index + 1);
+                container.appendChild(movieCard);
+            });
+        };
+
+        // --- Page Navigation Functions ---
+        const showPage = (pageName) => {
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.classList.add('hidden'));
+            document.getElementById(`${pageName}-page`).classList.remove('hidden');
+            if (pageName === 'series') {
+                renderSeries();
+            }
         };
 
         // --- Search Functionality ---
         const filterMovies = () => {
             const query = searchInput.value.toLowerCase();
             const filteredMovies = allMovies.filter(movie => {
-                return movie.Title.toLowerCase().includes(query);
+                const title = movie.Title || '';
+                return title.toLowerCase().includes(query);
             });
             renderMovies(filteredMovies, googleSheetContainer, true);
+        };
+
+        // --- Carousel Scroll Functionality ---
+        const scrollCarousel = (id, amount) => {
+            const carousel = document.getElementById(id);
+            carousel.scrollBy({ left: amount, behavior: 'smooth' });
         };
         
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
             fetchMoviesFromGoogleSheet();
+            showPage('movies');
             
             // Search input listener
             searchInput.addEventListener('keyup', filterMovies);
@@ -310,3 +508,4 @@
     </script>
 </body>
 </html>
+
