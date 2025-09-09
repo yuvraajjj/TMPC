@@ -129,6 +129,48 @@
             border-radius: 8px 0 8px 0;
             font-size: 1.5rem;
         }
+
+        /* End Credits Styling */
+        #end-credits-page {
+            position: relative;
+            height: 100vh;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        #end-credits-content {
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            text-align: center;
+            color: white;
+            padding: 2rem 1rem;
+            /* Faster animation */
+            animation: scroll-credits 60s linear infinite;
+        }
+
+        .credits-fade-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .credits-fade-overlay-bottom {
+            top: auto;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+        }
+
+        @keyframes scroll-credits {
+            from { transform: translateY(100%); }
+            to { transform: translateY(-100%); }
+        }
+        
     </style>
 </head>
 <body class="min-h-screen p-8">
@@ -152,9 +194,10 @@
 
         <!-- Navigation -->
         <nav class="flex justify-center space-x-6 mb-8">
-            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('movies')">Movies</button>
-            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('series')">Series</button>
-            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('watchlist')">Watchlist</button>
+            <button id="movies-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Movies</button>
+            <button id="series-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Series</button>
+            <button id="watchlist-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Watchlist</button>
+            <button id="end-credits-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">End Credits</button>
         </nav>
 
         <!-- Search Bar -->
@@ -212,6 +255,44 @@
                 </div>
             </section>
         </div>
+
+        <!-- --- End Credits Page Content --- -->
+        <div id="end-credits-page" class="page-content hidden">
+            <div id="end-credits-content">
+                <div class="mb-4">
+                    <p class="mb-2">Written and directed by</p>
+                    <p>THE MOTION PICTURE CLUB</p>
+                    <p>IIM KASHIPUR</p>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="text-2xl font-bold mb-2">CLASS OF 2027</h3>
+                    <p>Yuvraj Ghimire</p>
+                    <p>Suraj Sharma</p>
+                    <p>Jaydeep Kulkarni</p>
+                    <p>Aniket Thakur</p>
+                    <p>Ashwin</p>
+                    <p>Keertika Devi</p>
+                    <p>Pankaj Kumar</p>
+                    <p>Ramandeep Singh</p>
+                    <p>Sahana N</p>
+                    <p>Urbee Roy</p>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="text-2xl font-bold mb-2">CLASS OF 2026</h3>
+                    <p>Aditi Agarwal</p>
+                    <p>Akanksha Yadav</p>
+                    <p>Baibhab Kumar</p>
+                    <p>Bavish Bijoy</p>
+                    <p>Gundemoni Venkatesh</p>
+                    <p>Lavina Sadafal</p>
+                    <p>Srivatsan H</p>
+                </div>
+            </div>
+            <div class="credits-fade-overlay"></div>
+            <div class="credits-fade-overlay credits-fade-overlay-bottom"></div>
+        </div>
     </main>
 
     <!-- Firebase SDK Imports -->
@@ -246,6 +327,7 @@
         const moviesPage = document.getElementById('movies-page');
         const seriesPage = document.getElementById('series-page');
         const watchlistPage = document.getElementById('watchlist-page');
+        const endCreditsPage = document.getElementById('end-credits-page');
         const topPicksCarousel = document.getElementById('top-picks-carousel');
         const topHorrorCarousel = document.getElementById('top-horror-carousel');
         const seriesCarousel = document.getElementById('series-carousel');
@@ -333,12 +415,6 @@
                 return;
             }
             const watchlistRef = getWatchlistCollectionRef();
-            // This is the Firestore listener that may be causing the permissions error.
-            // The error means the currently authenticated user does not have permission
-            // to read from the specified collection path.
-            // Check your Firebase Security Rules in the Firebase console to ensure
-            // the rules for `/artifacts/{appId}/users/{userId}/watchlist` allow
-            // read access for `request.auth.uid == userId`.
             onSnapshot(watchlistRef, (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMovies(movies, watchlistContainer, false);
@@ -364,7 +440,7 @@
                 allMovies = parseCSV(csvText);
                 
                 const topPicksMovies = allMovies.slice(0, 10);
-                const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror');
+                const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror').slice(0, 10);
 
                 renderTopPicks(topPicksMovies, topPicksCarousel);
                 renderCarousel(topHorrorMovies, topHorrorCarousel, true);
@@ -524,6 +600,12 @@
             
             // Search input listener
             searchInput.addEventListener('keyup', filterMovies);
+
+            // Navigation button event listeners
+            document.getElementById('movies-btn').addEventListener('click', () => showPage('movies'));
+            document.getElementById('series-btn').addEventListener('click', () => showPage('series'));
+            document.getElementById('watchlist-btn').addEventListener('click', () => showPage('watchlist'));
+            document.getElementById('end-credits-btn').addEventListener('click', () => showPage('end-credits'));
 
             // Custom cursor logic
             document.addEventListener('mousemove', (e) => {
