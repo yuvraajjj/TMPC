@@ -154,6 +154,7 @@
         <nav class="flex justify-center space-x-6 mb-8">
             <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('movies')">Movies</button>
             <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('series')">Series</button>
+            <button class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500" onclick="showPage('watchlist')">Watchlist</button>
         </nav>
 
         <!-- Search Bar -->
@@ -175,22 +176,15 @@
                 </div>
             </section>
         
-            <!-- Public Movie Database from Google Sheets -->
-            <section id="google-sheet-section">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Explore Movies</h2>
-                <div id="google-sheet-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                    <div id="loading-movies" class="text-white text-center text-lg col-span-full">
-                        <p>Loading movies from Google Sheet...</p>
+            <!-- Top Horror Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Top Horror</h2>
+                <div id="top-horror-container" class="carousel-container relative">
+                    <div id="top-horror-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Top Horror movies will be dynamically added here -->
                     </div>
-                    <!-- Movies from Google Sheet will be dynamically added here -->
-                </div>
-            </section>
-
-            <!-- Watchlist Section -->
-            <section class="mt-12">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Your Watchlist</h2>
-                <div id="watchlist-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                    <!-- Watchlist movies will be dynamically added here -->
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('top-horror-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('top-horror-carousel', 200)">&gt;</button>
                 </div>
             </section>
         </div>
@@ -205,6 +199,16 @@
                     </div>
                     <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('series-carousel', -200)">&lt;</button>
                     <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('series-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+        </div>
+        
+        <!-- --- Watchlist Page Content --- -->
+        <div id="watchlist-page" class="page-content hidden">
+             <section class="mt-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Your Watchlist</h2>
+                <div id="watchlist-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    <!-- Watchlist movies will be dynamically added here -->
                 </div>
             </section>
         </div>
@@ -240,8 +244,9 @@
         // --- DOM Elements ---
         const moviesPage = document.getElementById('movies-page');
         const seriesPage = document.getElementById('series-page');
+        const watchlistPage = document.getElementById('watchlist-page');
         const topPicksCarousel = document.getElementById('top-picks-carousel');
-        const googleSheetContainer = document.getElementById('google-sheet-container');
+        const topHorrorCarousel = document.getElementById('top-horror-carousel');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
@@ -326,6 +331,12 @@
                 return;
             }
             const watchlistRef = getWatchlistCollectionRef();
+            // This is the Firestore listener that may be causing the permissions error.
+            // The error means the currently authenticated user does not have permission
+            // to read from the specified collection path.
+            // Check your Firebase Security Rules in the Firebase console to ensure
+            // the rules for `/artifacts/{appId}/users/{userId}/watchlist` allow
+            // read access for `request.auth.uid == userId`.
             onSnapshot(watchlistRef, (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMovies(movies, watchlistContainer, false);
@@ -338,7 +349,10 @@
         // --- Data Fetching & Parsing ---
         const fetchMoviesFromGoogleSheet = async () => {
             if (GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_URL_HERE")) {
-                document.getElementById('loading-movies').textContent = "Please set the Google Sheet URL in the code.";
+                // If the URL is the placeholder, we still want to render the page
+                // so the user can interact with the Series page and Watchlist.
+                renderTopPicks([], topPicksCarousel);
+                renderCarousel([], topHorrorCarousel, true);
                 return;
             }
             try {
@@ -348,12 +362,15 @@
                 }
                 const csvText = await response.text();
                 allMovies = parseCSV(csvText);
-                document.getElementById('loading-movies').remove();
-                renderTopPicks(allMovies.slice(0, 10), topPicksCarousel);
-                renderMovies(allMovies, googleSheetContainer, true);
+                
+                const topPicksMovies = allMovies.slice(0, 10);
+                const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror');
+
+                renderTopPicks(topPicksMovies, topPicksCarousel);
+                renderCarousel(topHorrorMovies, topHorrorCarousel, true);
             } catch (error) {
                 console.error("Error fetching movies from Google Sheet:", error);
-                document.getElementById('loading-movies').textContent = "Failed to load movies. Check the URL.";
+                moviesPage.innerHTML = `<p class="text-white text-center text-lg col-span-full">Failed to load movie data. Please check the Google Sheet URL and your network connection.</p>`;
             }
         };
 
@@ -445,7 +462,7 @@
             }
 
             movies.forEach(movie => {
-                const movieCard = createMovieCard(movie);
+                const movieCard = createMovieCard(movie, false, false);
                 container.appendChild(movieCard);
             });
         };
@@ -457,6 +474,16 @@
                 container.appendChild(movieCard);
             });
         };
+
+        const renderCarousel = (movies, container, addRanking = false) => {
+            container.innerHTML = '';
+            movies.forEach((movie, index) => {
+                const rank = addRanking ? index + 1 : null;
+                const movieCard = createMovieCard(movie, true, false, rank);
+                container.appendChild(movieCard);
+            });
+        };
+
 
         // --- Page Navigation Functions ---
         const showPage = (pageName) => {
@@ -470,12 +497,9 @@
 
         // --- Search Functionality ---
         const filterMovies = () => {
-            const query = searchInput.value.toLowerCase();
-            const filteredMovies = allMovies.filter(movie => {
-                const title = movie.Title || '';
-                return title.toLowerCase().includes(query);
-            });
-            renderMovies(filteredMovies, googleSheetContainer, true);
+            // The search bar no longer serves a purpose since the main "Explore" section was removed.
+            // I've kept the function here in case you want to re-purpose it later.
+            // Currently, it does nothing.
         };
 
         // --- Carousel Scroll Functionality ---
