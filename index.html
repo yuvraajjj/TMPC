@@ -251,6 +251,30 @@
                 </div>
             </section>
 
+            <!-- Sci-Fi Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Sci-Fi</h2>
+                <div id="scifi-cinema-container" class="carousel-container relative">
+                    <div id="scifi-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Sci-fi movies will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('scifi-cinema-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('scifi-cinema-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+
+            <!-- Comedy Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Comedy</h2>
+                <div id="comedy-cinema-container" class="carousel-container relative">
+                    <div id="comedy-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Comedy will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('comedy-cinema-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('comedy-cinema-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+
             <!-- Anime Section -->
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Anime</h2>
@@ -378,6 +402,8 @@
         const topPicksCarousel = document.getElementById('top-picks-carousel');
         const topHorrorCarousel = document.getElementById('top-horror-carousel');
         const malayalamCinemaCarousel = document.getElementById('malayalam-cinema-carousel');
+        const scifiCinemaCarousel = document.getElementById('scifi-cinema-carousel');
+        const comedyCinemaCarousel = document.getElementById('comedy-cinema-carousel');
         const animeCinemaCarousel = document.getElementById('anime-cinema-carousel');
         const bollywoodCinemaCarousel = document.getElementById('bollywood-cinema-carousel');
         const seriesCarousel = document.getElementById('series-carousel');
@@ -480,6 +506,8 @@
                 renderTopPicks([], topPicksCarousel);
                 renderCarousel([], topHorrorCarousel, true);
                 renderCarousel([], malayalamCinemaCarousel, false);
+                renderCarousel([], scifiCinemaCarousel, false);
+                renderCarousel([], comedyCinemaCarousel, false);
                 renderCarousel([], animeCinemaCarousel, false);
                 renderCarousel([], bollywoodCinemaCarousel, false);
                 return;
@@ -495,6 +523,8 @@
                 const topPicksMovies = allMovies.slice(0, 10);
                 const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror').slice(0, 10);
                 const malayalamMovies = allMovies.filter(movie => movie.Genre === 'Malayalam');
+                const scifiMovies = allMovies.filter(movie => movie.Genre === 'Sci-Fi');
+                const comedyMovies = allMovies.filter(movie => movie.Genre === 'Comedy');
                 const animeMovies = allMovies.filter(movie => movie.Genre === 'Anime');
                 const bollywoodMovies = allMovies.filter(movie => movie.Genre === 'Bollywood');
 
@@ -502,6 +532,8 @@
                 renderTopPicks(topPicksMovies, topPicksCarousel);
                 renderCarousel(topHorrorMovies, topHorrorCarousel, true);
                 renderCarousel(malayalamMovies, malayalamCinemaCarousel, false);
+                renderCarousel(scifiMovies, scifiCinemaCarousel, false);
+                renderCarousel(comedyMovies, comedyCinemaCarousel, false);
                 renderCarousel(animeMovies, animeCinemaCarousel, false);
                 renderCarousel(bollywoodMovies, bollywoodCinemaCarousel, false);
             } catch (error) {
