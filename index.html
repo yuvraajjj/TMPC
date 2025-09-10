@@ -251,6 +251,30 @@
                 </div>
             </section>
 
+            <!-- Anime Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Anime</h2>
+                <div id="anime-cinema-container" class="carousel-container relative">
+                    <div id="anime-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Anime will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('anime-cinema-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('anime-cinema-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+
+            <!-- Bollywood Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Bollywood</h2>
+                <div id="bollywood-cinema-container" class="carousel-container relative">
+                    <div id="bollywood-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
+                        <!-- Bollywood will be dynamically added here -->
+                    </div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('bollywood-cinema-carousel', -200)">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('bollywood-cinema-carousel', 200)">&gt;</button>
+                </div>
+            </section>
+
         </div>
 
         <!-- --- Series Page Content --- -->
@@ -354,6 +378,8 @@
         const topPicksCarousel = document.getElementById('top-picks-carousel');
         const topHorrorCarousel = document.getElementById('top-horror-carousel');
         const malayalamCinemaCarousel = document.getElementById('malayalam-cinema-carousel');
+        const animeCinemaCarousel = document.getElementById('anime-cinema-carousel');
+        const bollywoodCinemaCarousel = document.getElementById('bollywood-cinema-carousel');
         const seriesCarousel = document.getElementById('series-carousel');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
@@ -454,6 +480,8 @@
                 renderTopPicks([], topPicksCarousel);
                 renderCarousel([], topHorrorCarousel, true);
                 renderCarousel([], malayalamCinemaCarousel, false);
+                renderCarousel([], animeCinemaCarousel, false);
+                renderCarousel([], bollywoodCinemaCarousel, false);
                 return;
             }
             try {
@@ -467,10 +495,15 @@
                 const topPicksMovies = allMovies.slice(0, 10);
                 const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror').slice(0, 10);
                 const malayalamMovies = allMovies.filter(movie => movie.Genre === 'Malayalam');
+                const animeMovies = allMovies.filter(movie => movie.Genre === 'Anime');
+                const bollywoodMovies = allMovies.filter(movie => movie.Genre === 'Bollywood');
+
 
                 renderTopPicks(topPicksMovies, topPicksCarousel);
                 renderCarousel(topHorrorMovies, topHorrorCarousel, true);
                 renderCarousel(malayalamMovies, malayalamCinemaCarousel, false);
+                renderCarousel(animeMovies, animeCinemaCarousel, false);
+                renderCarousel(bollywoodMovies, bollywoodCinemaCarousel, false);
             } catch (error) {
                 console.error("Error fetching movies from Google Sheet:", error);
                 moviesPage.innerHTML = `<p class="text-white text-center text-lg col-span-full">Failed to load movie data. Please check the Google Sheet URL and your network connection.</p>`;
