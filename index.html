@@ -179,23 +179,37 @@
     <div id="custom-cursor" class="custom-cursor"></div>
 
     <main class="container mx-auto px-4 md:px-8 py-12">
-        <header class="text-center mb-12">
-            <!-- Logos -->
-            <div class="flex justify-center items-center space-x-4 mb-4">
-                <img src="https://www.iimkashipur.ac.in/page/image/1678950321.jpg" alt="IIM Kashipur Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
-                <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+        <!-- New Header Structure -->
+        <header class="mb-12 relative">
+            <div class="absolute top-0 right-0 flex space-x-4 p-4">
+                <!-- Replace with your actual Instagram and Blog URLs -->
+                <a href="https://www.instagram.com/tmpc_iim_kashipur/" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-instagram"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                </a>
+                <a href="https://letterboxd.com/tmpc/" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                </a>
             </div>
             
-            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
-            <h2 class="text-lg md:text-xl text-gray-400 font-medium">IIM Kashipur</h2>
-            <p class="text-sm md:text-md italic text-gray-500 mt-1">In service of the cinema</p>
-            <p id="user-id-display" class="mt-4 text-xs text-gray-500"></p>
+            <div class="flex flex-col items-center text-center">
+                <!-- Logos -->
+                <div class="flex justify-center items-center space-x-4 mb-4">
+                    <img src="https://www.iimkashipur.ac.in/page/image/1678950321.jpg" alt="IIM Kashipur Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+                    <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
+                <h2 class="text-lg md:text-xl text-gray-400 font-medium">IIM Kashipur</h2>
+                <p class="text-sm md:text-md italic text-gray-500 mt-1">In service of the cinema</p>
+                <p id="user-id-display" class="mt-4 text-xs text-gray-500"></p>
+            </div>
         </header>
 
         <!-- Navigation -->
         <nav class="flex justify-center space-x-6 mb-8">
             <button id="movies-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Movies</button>
             <button id="series-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Series</button>
+            <button id="screenings-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Screenings</button>
             <button id="watchlist-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Watchlist</button>
             <button id="end-credits-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">End Credits</button>
         </nav>
@@ -315,6 +329,16 @@
             </section>
         </div>
         
+        <!-- --- Screenings Page Content --- -->
+        <div id="screenings-page" class="page-content hidden">
+            <section class="mt-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Upcoming Screenings</h2>
+                <div id="screenings-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    <!-- Screenings will be dynamically added here -->
+                </div>
+            </section>
+        </div>
+
         <!-- --- Watchlist Page Content --- -->
         <div id="watchlist-page" class="page-content hidden">
              <section class="mt-12">
@@ -375,26 +399,23 @@
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         let allMovies = [];
-        let seriesData = [
-            { title: "Breaking Bad", poster_path: "https://m.media-amazon.com/images/M/MV5BNDkyZWRkY2MtYmYzYS00YWI0LTg4Y2UtZjE1YzE2YmY1ZDc3XkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_QL75_UY281_CR140,0,188,281_.jpg" },
-            { title: "The Office", poster_path: "https://m.media-amazon.com/images/M/MV5BYzAwZDEzNmYtYzI5Mi00ODVjLTk5ZDMtZGI4YTUzYmJkNmE4XkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UY281_CR1,0,188,281_.jpg" },
-            { title: "Stranger Things", poster_path: "https://m.media-amazon.com/images/M/MV5BN2RjYThmOGItYjAzOC00ZWEzLWIwZTQtZTM4ZjUwNTk2NzAxXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UX190_CR0,4,190,281_.jpg" },
-            { title: "The Queen's Gambit", poster_path: "https://m.media-amazon.com/images/M/MV5BMjkwMzE5ODMtMjhhNy00YmU0LTk0ZTYtODJmMDNlMTYxYjU5XkEyXkFqcGdeQXVyMDY2MDc4NA@@._V1_QL75_UX190_CR0,0,190,281_.jpg" },
-            { title: "The Last of Us", poster_path: "https://m.media-amazon.com/images/M/MV5BZDU1NGY0ZDMtYmU5Yi00M2VhLThjYWMtOGU0ZWM3NjVjMWE5XkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_QL75_UX190_CR0,4,190,281_.jpg" },
-            { title: "Loki", poster_path: "https://m.media-amazon.com/images/M/MV5BODg3ZjI2OTEtMGM1NS00ZWIxLThhZTgtNWZhNjJjMDliM2MxXkEyXkFqcGdeQXVyMTE0MzQwMDM2._V1_QL75_UX190_CR0,4,190,281_.jpg" },
-            { title: "Game of Thrones", poster_path: "https://m.media-amazon.com/images/M/MV5BODg1NmI5MTYtN2IyMC00NWU5LTlmYzMtM2M5YzlmMzc3ZjU3XkEyXkFqcGdeQXVyMTI3MDk3NTgw._V1_QL75_UX190_CR0,4,190,281_.jpg" },
-            { title: "Friends", poster_path: "https://m.media-amazon.com/images/M/MV5BNDVkYjU0MzctMWRmZi00NTFlLWJjZjUtNjc2ZTgwNGE4ODFmXkEyXkFqcGdeQXVyNDg4NjY5OTQ@._V1_QL75_UX190_CR0,2,190,281_.jpg" },
-            { title: "Chernobyl", poster_path: "https://m.media-amazon.com/images/M/MV5BZDg5ZmY0ZmMtMjA2Yi00MTY2LWI3YzEtZmY4ZjI4ZWRiYjM3XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_QL75_UX190_CR0,0,190,281_.jpg" },
-            { title: "Narcos", poster_path: "https://m.media-amazon.com/images/M/MV5BMmM2YmY1ZDgtY2IyMC00YjUxLWEwYzEtMmM2MTIxZjU5ODZkXkEyXkFqcGdeQXVyMTQ4OTcxMTg@._V1_QL75_UX190_CR0,0,190,281_.jpg" }
-        ];
+        let allSeries = []; // New global variable for series data
+
+        let screeningsData = [
+             { title: "The Martian", poster_path: "https://regalcdn.azureedge.net/CW/DemonSlayerKimetsuNoYaibaInfinityCastleSUB/HO00013487/TV_SmallPosterImage/20250819-115123758.jpg", venue: "SRS Cinema", form_url: "https://docs.google.com/forms/d/e/1FAIpQLSf-QlC_RN3eBtrfSiV7YGqU6-wBbpHNald8s5sThUMMftGhmg/viewform?usp=sharing&ouid=113775549506473556233" },
+             
+         ];
+
         let currentPage = 'movies'; // Global variable to track the current page
 
         // --- Constants ---
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
+        const SERIES_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVP_lhBbRrUjgi55-IHcY9ZaII9b8eAUqdByvqYHNPMYcKU0TC6nQaA5AcVLx2sC_DkSe-b4_Ty6P7/pub?gid=0&single=true&output=csv";
         
         // --- DOM Elements ---
         const moviesPage = document.getElementById('movies-page');
         const seriesPage = document.getElementById('series-page');
+        const screeningsPage = document.getElementById('screenings-page');
         const watchlistPage = document.getElementById('watchlist-page');
         const endCreditsPage = document.getElementById('end-credits-page');
         const searchResultsPage = document.getElementById('search-results-page');
@@ -407,6 +428,7 @@
         const animeCinemaCarousel = document.getElementById('anime-cinema-carousel');
         const bollywoodCinemaCarousel = document.getElementById('bollywood-cinema-carousel');
         const seriesCarousel = document.getElementById('series-carousel');
+        const screeningsContainer = document.getElementById('screenings-container');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
@@ -491,6 +513,9 @@
                 return;
             }
             const watchlistRef = getWatchlistCollectionRef();
+            console.log(`Setting up watchlist listener for user: ${userId} at path: ${watchlistRef.path}`);
+            // IMPORTANT: For this to work, you must have the following Firestore Security Rule configured:
+            // allow read, write: if request.auth.uid != null && request.auth.uid == userId;
             onSnapshot(watchlistRef, (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMovies(movies, watchlistContainer, false);
@@ -501,6 +526,20 @@
         };
 
         // --- Data Fetching & Parsing ---
+        const parseCSV = (text) => {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+                let movie = {};
+                headers.forEach((header, i) => {
+                    movie[header] = values[i];
+                });
+                return movie;
+            });
+            return data;
+        };
+
         const fetchMoviesFromGoogleSheet = async () => {
             if (GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_URL_HERE")) {
                 renderTopPicks([], topPicksCarousel);
@@ -542,22 +581,29 @@
             }
         };
 
-        const parseCSV = (text) => {
-            const lines = text.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            const data = lines.slice(1).map(line => {
-                const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-                let movie = {};
-                headers.forEach((header, i) => {
-                    movie[header] = values[i];
-                });
-                return movie;
-            });
-            return data;
-        };
+        const fetchSeriesFromGoogleSheet = async () => {
+             // The check for the placeholder URL was preventing the data from loading.
+             // We now unconditionally try to fetch the data. The error will be caught if the URL is invalid.
+             try {
+                 const response = await fetch(SERIES_SHEET_URL);
+                 if (!response.ok) {
+                     throw new Error(`HTTP error! status: ${response.status}`);
+                 }
+                 const csvText = await response.text();
+                 allSeries = parseCSV(csvText);
+                 renderSeries(allSeries);
+             } catch (error) {
+                 console.error("Error fetching series from Google Sheet:", error);
+                 seriesPage.innerHTML = `<p class="text-white text-center text-lg col-span-full">Failed to load series data. Please check the Google Sheet URL and your network connection.</p>`;
+             }
+         };
 
-        const renderSeries = (filteredSeries = seriesData) => {
+        const renderSeries = (filteredSeries = allSeries) => {
             seriesCarousel.innerHTML = '';
+            if (filteredSeries.length === 0) {
+                 seriesCarousel.innerHTML = `<p class="text-center text-gray-400 col-span-full">No series found.</p>`;
+                 return;
+            }
             filteredSeries.forEach(series => {
                 const seriesCard = createMovieCard(series, true, true);
                 seriesCarousel.appendChild(seriesCard);
@@ -565,7 +611,7 @@
         };
         
         // --- UI Rendering Functions ---
-        const createMovieCard = (item, isCarousel = false, isSeries = false, rank = null) => {
+        const createMovieCard = (item, isCarousel = false, isSeries = false, isScreening = false, rank = null) => {
             const movieCard = document.createElement('div');
             movieCard.classList.add('movie-card', 'rounded-lg', 'overflow-hidden');
             if (isCarousel) {
@@ -575,7 +621,7 @@
             const posterPath = item.poster_path || item.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
             const title = item.title || item.Title || 'Untitled';
             const releaseYear = item.release_date || item.Release_Date || 'N/A';
-            const driveUrl = item.drive_url || item.Drive_URL || null;
+            const driveUrl = item.drive_url || item.Drive_URL || item.form_url || null; // Screenings now use form_url
             const isWatchlist = movieCard.parentNode === watchlistContainer;
 
             movieCard.innerHTML = `
@@ -583,20 +629,20 @@
                 ${rank ? `<div class="rating-overlay">${rank}</div>` : ''}
                 <div class="movie-info p-4">
                     <h3 class="text-lg font-semibold truncate">${title}</h3>
-                    <p class="text-sm text-gray-400 mb-2">${releaseYear}</p>
+                    <p class="text-sm text-gray-400 mb-2">${isScreening ? item.venue : releaseYear}</p>
                     <div class="flex flex-col space-y-2">
-                        ${!isSeries && !isWatchlist ? `
+                        ${!isSeries && !isWatchlist && !isScreening ? `
                             <button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>
                         ` : ''}
                         ${isWatchlist ? `
                             <button class="remove-btn btn btn-red flex-1">Remove</button>
                         ` : ''}
-                        ${driveUrl ? `<a href="${driveUrl}" target="_blank" class="btn btn-green block text-center flex-1">Watch Now</a>` : ''}
+                        ${driveUrl ? `<a href="${driveUrl}" target="_blank" class="btn btn-green block text-center flex-1">${isScreening ? 'Register Now' : 'Watch Now'}</a>` : ''}
                     </div>
                 </div>
             `;
             
-            if (!isSeries && !isWatchlist) {
+            if (!isSeries && !isWatchlist && !isScreening) {
                 const addButton = movieCard.querySelector('.add-btn');
                 if (addButton) {
                     addButton.addEventListener('click', () => {
@@ -620,6 +666,14 @@
             return movieCard;
         };
         
+        const renderScreenings = () => {
+             screeningsContainer.innerHTML = '';
+             screeningsData.forEach(screening => {
+                 const screeningCard = createMovieCard(screening, false, false, true); // Use the unified card creator
+                 screeningsContainer.appendChild(screeningCard);
+             });
+        };
+
         const renderMovies = (movies, container, showAddButton) => {
             container.innerHTML = '';
             
@@ -637,7 +691,7 @@
         const renderTopPicks = (movies, container) => {
             container.innerHTML = '';
             movies.forEach((movie, index) => {
-                const movieCard = createMovieCard(movie, true, false, index + 1);
+                const movieCard = createMovieCard(movie, true, false, false, index + 1);
                 container.appendChild(movieCard);
             });
         };
@@ -646,7 +700,7 @@
             container.innerHTML = '';
             movies.forEach((movie, index) => {
                 const rank = addRanking ? index + 1 : null;
-                const movieCard = createMovieCard(movie, true, false, rank);
+                const movieCard = createMovieCard(movie, true, false, false, rank);
                 container.appendChild(movieCard);
             });
         };
@@ -660,13 +714,15 @@
             currentPage = pageName;
             if (pageName === 'series') {
                 renderSeries();
+            } else if (pageName === 'screenings') {
+                renderScreenings();
             }
         };
 
         // --- Search Functionality ---
         const filterMovies = () => {
             const query = searchInput.value.toLowerCase();
-            const allContent = [...allMovies, ...seriesData];
+            const allContent = [...allMovies, ...allSeries, ...screeningsData]; // Updated search to include allSeries
             const filteredResults = allContent.filter(item => {
                 const title = item.title || item.Title || '';
                 return title.toLowerCase().includes(query);
@@ -696,6 +752,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
             fetchMoviesFromGoogleSheet();
+            fetchSeriesFromGoogleSheet(); // Naya series data fetch karein
             showPage('movies');
             
             // Search input listener
@@ -708,6 +765,7 @@
             // Navigation button event listeners
             document.getElementById('movies-btn').addEventListener('click', () => showPage('movies'));
             document.getElementById('series-btn').addEventListener('click', () => showPage('series'));
+            document.getElementById('screenings-btn').addEventListener('click', () => showPage('screenings'));
             document.getElementById('watchlist-btn').addEventListener('click', () => showPage('watchlist'));
             document.getElementById('end-credits-btn').addEventListener('click', () => showPage('end-credits'));
 
