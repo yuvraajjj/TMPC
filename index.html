@@ -14,6 +14,33 @@
             cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/%3E%3C/svg%3E") 12 12, auto;
         }
         
+        /* Background Video */
+        #bg-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -2; /* Behind everything */
+            overflow: hidden;
+        }
+
+        #bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #bg-video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6); /* Dark overlay for text readability */
+            z-index: -1; /* On top of video, behind content */
+        }
+
         .custom-cursor {
             pointer-events: none;
             position: absolute;
@@ -129,6 +156,12 @@
             border-radius: 8px 0 8px 0;
             font-size: 1.5rem;
         }
+
+        .loader {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
         
         /* Video Player Modal */
         #video-modal {
@@ -226,6 +259,15 @@
 </head>
 <body class="min-h-screen p-8">
 
+    <!-- Background Video -->
+    <div id="bg-video-container">
+        <video autoplay loop muted playsinline id="bg-video">
+            <source src="https://videos.pexels.com/video-files/3834433/3834433-hd_1920_1080_25fps.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div id="bg-video-overlay"></div>
+
     <!-- Custom Cursor Element -->
     <div id="custom-cursor" class="custom-cursor"></div>
 
@@ -284,11 +326,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">TMPC Top 10 Picks</h2>
                 <div id="top-picks-container" class="carousel-container relative">
-                    <div id="top-picks-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Top 10 movies will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('top-picks-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('top-picks-carousel', 200)">&gt;</button>
+                    <div id="top-picks-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="top-picks-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="top-picks-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
         
@@ -296,11 +336,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Top Horror</h2>
                 <div id="top-horror-container" class="carousel-container relative">
-                    <div id="top-horror-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Top Horror movies will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('top-horror-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('top-horror-carousel', 200)">&gt;</button>
+                    <div id="top-horror-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="top-horror-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="top-horror-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -308,11 +346,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Malayalam Cinema</h2>
                 <div id="malayalam-cinema-container" class="carousel-container relative">
-                    <div id="malayalam-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Malayalam movies will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('malayalam-cinema-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('malayalam-cinema-carousel', 200)">&gt;</button>
+                    <div id="malayalam-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="malayalam-cinema-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="malayalam-cinema-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -320,11 +356,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Sci-Fi</h2>
                 <div id="scifi-cinema-container" class="carousel-container relative">
-                    <div id="scifi-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Sci-fi movies will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('scifi-cinema-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('scifi-cinema-carousel', 200)">&gt;</button>
+                    <div id="scifi-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="scifi-cinema-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="scifi-cinema-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -332,11 +366,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Comedy</h2>
                 <div id="comedy-cinema-container" class="carousel-container relative">
-                    <div id="comedy-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Comedy will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('comedy-cinema-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('comedy-cinema-carousel', 200)">&gt;</button>
+                    <div id="comedy-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="comedy-cinema-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="comedy-cinema-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -344,11 +376,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Anime</h2>
                 <div id="anime-cinema-container" class="carousel-container relative">
-                    <div id="anime-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Anime will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('anime-cinema-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('anime-cinema-carousel', 200)">&gt;</button>
+                    <div id="anime-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="anime-cinema-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="anime-cinema-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -356,11 +386,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Bollywood</h2>
                 <div id="bollywood-cinema-container" class="carousel-container relative">
-                    <div id="bollywood-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Bollywood will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('bollywood-cinema-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('bollywood-cinema-carousel', 200)">&gt;</button>
+                    <div id="bollywood-cinema-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="bollywood-cinema-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="bollywood-cinema-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
 
@@ -371,11 +399,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Popular Series</h2>
                 <div id="series-container" class="carousel-container relative">
-                    <div id="series-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Series will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('series-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('series-carousel', 200)">&gt;</button>
+                    <div id="series-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="series-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="series-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
             
@@ -383,11 +409,9 @@
             <section class="mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Sitcoms</h2>
                 <div id="sitcoms-container" class="carousel-container relative">
-                    <div id="sitcoms-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth">
-                        <!-- Sitcoms will be dynamically added here -->
-                    </div>
-                    <button class="carousel-nav-btn left-btn hidden md:block" onclick="scrollCarousel('sitcoms-carousel', -200)">&lt;</button>
-                    <button class="carousel-nav-btn right-btn hidden md:block" onclick="scrollCarousel('sitcoms-carousel', 200)">&gt;</button>
+                    <div id="sitcoms-carousel" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scroll-smooth"></div>
+                    <button class="carousel-nav-btn left-btn hidden md:block" data-carousel="sitcoms-carousel" data-direction="-1">&lt;</button>
+                    <button class="carousel-nav-btn right-btn hidden md:block" data-carousel="sitcoms-carousel" data-direction="1">&gt;</button>
                 </div>
             </section>
         </div>
@@ -470,14 +494,17 @@
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         let allMovies = [];
-        let allSeries = []; // New global variable for series data
-
+        let allSeries = []; 
         let screeningsData = [
-             { title: "The Martian", poster_path: "https://regalcdn.azureedge.net/CW/DemonSlayerKimetsuNoYaibaInfinityCastleSUB/HO00013487/TV_SmallPosterImage/20250819-115123758.jpg", venue: "SRS Cinema", form_url: "https://docs.google.com/forms/d/e/1FAIpQLSf-QlC_RN3eBtrfSiV7YGqU6-wBbpHNald8s5sThUMMftGhmg/viewform?usp=sharing&ouid=113775549506473556233" },
-             
-         ];
-
-        let currentPage = 'movies'; // Global variable to track the current page
+            { 
+                title: "Demon Slayer: Infinity Train", 
+                poster_path: "https://regalcdn.azureedge.net/CW/DemonSlayerKimetsuNoYaibaInfinityCastleSUB/HO00013487/TV_SmallPosterImage/20250819-115123758.jpg", 
+                venue: "SRS Cinema", 
+                form_url: "https://docs.google.com/forms/d/1qp6lPCQ8CB5WS862cXfbh00zPO3LVE1JLPYByp6QMPA/edit#responses", 
+                type: 'screening' 
+            }
+        ];
+        let currentPage = 'movies'; 
 
         // --- Constants ---
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
@@ -488,18 +515,18 @@
         const seriesPage = document.getElementById('series-page');
         const screeningsPage = document.getElementById('screenings-page');
         const watchlistPage = document.getElementById('watchlist-page');
-        const endCreditsPage = document.getElementById('end-credits-page');
-        const searchResultsPage = document.getElementById('search-results-page');
         const searchResultsContainer = document.getElementById('search-results-container');
-        const topPicksCarousel = document.getElementById('top-picks-carousel');
-        const topHorrorCarousel = document.getElementById('top-horror-carousel');
-        const malayalamCinemaCarousel = document.getElementById('malayalam-cinema-carousel');
-        const scifiCinemaCarousel = document.getElementById('scifi-cinema-carousel');
-        const comedyCinemaCarousel = document.getElementById('comedy-cinema-carousel');
-        const animeCinemaCarousel = document.getElementById('anime-cinema-carousel');
-        const bollywoodCinemaCarousel = document.getElementById('bollywood-cinema-carousel');
-        const seriesCarousel = document.getElementById('series-carousel');
-        const sitcomsCarousel = document.getElementById('sitcoms-carousel');
+        const carousels = {
+            topPicks: document.getElementById('top-picks-carousel'),
+            topHorror: document.getElementById('top-horror-carousel'),
+            malayalamCinema: document.getElementById('malayalam-cinema-carousel'),
+            scifiCinema: document.getElementById('scifi-cinema-carousel'),
+            comedyCinema: document.getElementById('comedy-cinema-carousel'),
+            animeCinema: document.getElementById('anime-cinema-carousel'),
+            bollywoodCinema: document.getElementById('bollywood-cinema-carousel'),
+            series: document.getElementById('series-carousel'),
+            sitcoms: document.getElementById('sitcoms-carousel'),
+        };
         const screeningsContainer = document.getElementById('screenings-container');
         const watchlistContainer = document.getElementById('watchlist-container');
         const searchInput = document.getElementById('search-input');
@@ -518,20 +545,23 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
                 
-                onAuthStateChanged(auth, async (user) => {
+                onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
                         userIdDisplay.textContent = `User ID: ${userId}`;
                         console.log(`Authenticated user with ID: ${userId}`);
                         setupWatchlistListener();
                     } else {
-                        console.log("No authenticated user found, signing in anonymously...");
-                        await signInAnonymously(auth);
+                        userId = null;
+                        console.log("User is not signed in.");
+                        watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Authenticating...</p>`;
                     }
                 });
 
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
@@ -539,170 +569,132 @@
         };
 
         // --- Firestore Functions ---
-        const getWatchlistCollectionRef = () => {
-            const path = `/artifacts/${appId}/users/${userId}/watchlist`;
-            console.log(`Accessing Firestore path: ${path}`);
-            return collection(db, path);
-        };
+        const getWatchlistCollectionRef = () => collection(db, `/artifacts/${appId}/users/${userId}/watchlist`);
         
         const addMovieToWatchlist = async (movie) => {
-            if (!userId) {
-                console.error("User not authenticated. Cannot add movie to watchlist.");
-                return;
-            }
+            if (!userId) return console.error("User not authenticated.");
             try {
-                const watchlistRef = getWatchlistCollectionRef();
-                // Use a unique ID for the document to prevent duplicates
-                const docRef = doc(watchlistRef, movie.title);
-                
-                await setDoc(docRef, {
+                await setDoc(doc(getWatchlistCollectionRef(), movie.title), {
                     title: movie.title || null,
                     release_date: movie.release_date || null,
                     poster_path: movie.poster_path || null,
                     drive_url: movie.drive_url || null
                 });
-                console.log("Movie added to watchlist!");
             } catch (e) {
                 console.error("Error adding document:", e);
             }
         };
 
         const removeMovieFromWatchlist = async (movieId) => {
-            if (!userId) {
-                console.error("User not authenticated. Cannot remove movie from watchlist.");
-                return;
-            }
+            if (!userId) return console.error("User not authenticated.");
             try {
-                const watchlistRef = getWatchlistCollectionRef();
-                const movieDocRef = doc(watchlistRef, movieId);
-                await deleteDoc(movieDocRef);
-                console.log("Movie removed from watchlist!");
+                await deleteDoc(doc(getWatchlistCollectionRef(), movieId));
             } catch (e) {
                 console.error("Error removing document:", e);
             }
         };
         
         const setupWatchlistListener = () => {
-            if (!userId) {
-                console.error("User not authenticated. Cannot set up watchlist listener.");
-                return;
-            }
-            const watchlistRef = getWatchlistCollectionRef();
-            console.log(`Setting up watchlist listener for user: ${userId} at path: ${watchlistRef.path}`);
-            // IMPORTANT: For this to work, you must have the following Firestore Security Rule configured:
-            // allow read, write: if request.auth.uid != null && request.auth.uid == userId;
-            onSnapshot(watchlistRef, (snapshot) => {
+            if (!userId) return;
+            onSnapshot(getWatchlistCollectionRef(), (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderMovies(movies, watchlistContainer, false);
+                renderWatchlist(movies, watchlistContainer);
             }, (error) => {
                 console.error("Error listening to watchlist:", error);
-                watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Error loading your watchlist. Please check your Firebase permissions for the path logged in the console.</p>`;
+                watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Error loading watchlist.</p>`;
             });
         };
 
         // --- Data Fetching & Parsing ---
         const parseCSV = (text) => {
-            const lines = text.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            const data = lines.slice(1).map(line => {
-                const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-                let movie = {};
+            if (!text || typeof text !== 'string') return [];
+            const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
+            if (lines.length < 2) return [];
+            const headers = lines[0].split(',').map(h => h.trim());
+            if (headers.length === 0 || (headers.length === 1 && headers[0] === '')) return [];
+
+            return lines.slice(1).map(line => {
+                if (!line.trim()) return null;
+                const values = line.split(',');
+                let obj = {};
                 headers.forEach((header, i) => {
-                    movie[header] = values[i];
+                    obj[header] = (values[i] || '').trim();
                 });
-                return movie;
-            });
-            return data;
+                return obj;
+            }).filter(item => item !== null);
         };
 
-        const fetchMoviesFromGoogleSheet = async () => {
-            if (GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_URL_HERE")) {
-                renderTopPicks([], topPicksCarousel);
-                renderCarousel([], topHorrorCarousel, true);
-                renderCarousel([], malayalamCinemaCarousel, false);
-                renderCarousel([], scifiCinemaCarousel, false);
-                renderCarousel([], comedyCinemaCarousel, false);
-                renderCarousel([], animeCinemaCarousel, false);
-                renderCarousel([], bollywoodCinemaCarousel, false);
-                return;
-            }
+        const fetchData = async (url) => {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.text();
+        };
+
+        const loadContent = async () => {
+            Object.values(carousels).forEach(showLoadingIndicator);
             try {
-                const response = await fetch(GOOGLE_SHEET_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const csvText = await response.text();
-                allMovies = parseCSV(csvText);
+                const [movieCsv, seriesCsv] = await Promise.all([
+                    fetchData(GOOGLE_SHEET_URL),
+                    fetchData(SERIES_SHEET_URL)
+                ]);
                 
-                const topPicksMovies = allMovies.slice(0, 10);
-                const topHorrorMovies = allMovies.filter(movie => movie.Genre === 'Horror').slice(0, 10);
-                const malayalamMovies = allMovies.filter(movie => movie.Genre === 'Malayalam');
-                const scifiMovies = allMovies.filter(movie => movie.Genre === 'Sci-Fi');
-                const comedyMovies = allMovies.filter(movie => movie.Genre === 'Comedy');
-                const animeMovies = allMovies.filter(movie => movie.Genre === 'Anime');
-                const bollywoodMovies = allMovies.filter(movie => movie.Genre === 'Bollywood');
+                allMovies = parseCSV(movieCsv).map(m => ({ ...m, type: 'movie' }));
+                allSeries = parseCSV(seriesCsv).map(s => ({ ...s, type: 'series' }));
 
+                renderMovieCarousels();
+                renderSeriesCarousels();
 
-                renderTopPicks(topPicksMovies, topPicksCarousel);
-                renderCarousel(topHorrorMovies, topHorrorCarousel, true);
-                renderCarousel(malayalamMovies, malayalamCinemaCarousel, false);
-                renderCarousel(scifiMovies, scifiCinemaCarousel, false);
-                renderCarousel(comedyMovies, comedyCinemaCarousel, false);
-                renderCarousel(animeMovies, animeCinemaCarousel, false);
-                renderCarousel(bollywoodMovies, bollywoodCinemaCarousel, false);
             } catch (error) {
-                console.error("Error fetching movies from Google Sheet:", error);
-                moviesPage.innerHTML = `<p class="text-white text-center text-lg col-span-full">Failed to load movie data. Please check the Google Sheet URL and your network connection.</p>`;
+                console.error("Error loading content:", error);
+                moviesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load content.</p>`;
+                seriesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load content.</p>`;
             }
-        };
-
-        const fetchSeriesFromGoogleSheet = async () => {
-             // The check for the placeholder URL was preventing the data from loading.
-             // We now unconditionally try to fetch the data. The error will be caught if the URL is invalid.
-             try {
-                 const response = await fetch(SERIES_SHEET_URL);
-                 if (!response.ok) {
-                     throw new Error(`HTTP error! status: ${response.status}`);
-                 }
-                 const csvText = await response.text();
-                 allSeries = parseCSV(csvText);
-                 
-                 const popularSeries = allSeries.filter(series => series.Genre === 'Popular');
-                 const sitcoms = allSeries.filter(series => series.Genre === 'Sitcom');
-                 
-                 renderSeries(popularSeries, seriesCarousel);
-                 renderSeries(sitcoms, sitcomsCarousel);
-             } catch (error) {
-                 console.error("Error fetching series from Google Sheet:", error);
-                 seriesPage.innerHTML = `<p class="text-white text-center text-lg col-span-full">Failed to load series data. Please check the Google Sheet URL and your network connection.</p>`;
-             }
-         };
-
-        const renderSeries = (filteredSeries, container) => {
-            container.innerHTML = '';
-            if (filteredSeries.length === 0) {
-                 container.innerHTML = `<p class="text-center text-gray-400 col-span-full">No series found.</p>`;
-                 return;
-            }
-            filteredSeries.forEach(series => {
-                const seriesCard = createMovieCard(series, true, true);
-                container.appendChild(seriesCard);
-            });
         };
         
         // --- UI Rendering Functions ---
-        const createMovieCard = (item, isCarousel = false, isSeries = false, isScreening = false, rank = null) => {
+        const showLoadingIndicator = (container) => {
+            if (container) container.innerHTML = `<div class="loader">Loading...</div>`;
+        };
+        
+        const renderMovieCarousels = () => {
+            renderCarousel(allMovies.slice(0, 10), carousels.topPicks, { rank: true });
+            renderCarousel(allMovies.filter(m => m.Genre === 'Horror').slice(0, 10), carousels.topHorror, { rank: true });
+            renderCarousel(allMovies.filter(m => m.Genre === 'Malayalam'), carousels.malayalamCinema);
+            renderCarousel(allMovies.filter(m => m.Genre === 'Sci-Fi'), carousels.scifiCinema);
+            renderCarousel(allMovies.filter(m => m.Genre === 'Comedy'), carousels.comedyCinema);
+            renderCarousel(allMovies.filter(m => m.Genre === 'Anime'), carousels.animeCinema);
+            renderCarousel(allMovies.filter(m => m.Genre === 'Bollywood'), carousels.bollywoodCinema);
+        };
+
+        const renderSeriesCarousels = () => {
+            renderCarousel(allSeries.filter(s => s.Genre === 'Popular'), carousels.series);
+            renderCarousel(allSeries.filter(s => s.Genre === 'Sitcom'), carousels.sitcoms);
+        };
+
+        const createMovieCard = (item, options = {}) => {
+            const { isWatchlistItem = false, rank = null } = options;
+            
             const movieCard = document.createElement('div');
-            movieCard.classList.add('movie-card', 'rounded-lg', 'overflow-hidden');
-            if (isCarousel) {
-                movieCard.classList.add('snap-start');
-            }
+            movieCard.classList.add('movie-card', 'rounded-lg', 'overflow-hidden', 'snap-start');
 
             const posterPath = item.poster_path || item.Poster_URL || 'https://placehold.co/400x600/1e293b/d1d5db?text=No+Image';
             const title = item.title || item.Title || 'Untitled';
-            const releaseYear = item.release_date || item.Release_Date || 'N/A';
-            const driveUrl = item.drive_url || item.Drive_URL || item.form_url || null; // Screenings now use form_url
-            const isWatchlist = movieCard.parentNode === watchlistContainer;
+            
+            let releaseYear = item.Release_Date || 'N/A';
+            let driveUrl = item.drive_url || item.Drive_URL || item.form_url || null;
+            
+            if (releaseYear && releaseYear.startsWith('http') && !driveUrl) {
+                driveUrl = releaseYear;
+                releaseYear = 'N/A';
+            }
+            
+            const isScreening = item.type === 'screening';
+            const isSeries = item.type === 'series';
+
+            let buttonText = 'Watch Now';
+            if (isScreening) {
+                buttonText = 'Register Now';
+            }
 
             movieCard.innerHTML = `
                 <img src="${posterPath}" alt="${title} Poster" class="rounded-lg w-full h-auto">
@@ -711,51 +703,26 @@
                     <h3 class="text-lg font-semibold truncate">${title}</h3>
                     <p class="text-sm text-gray-400 mb-2">${isScreening ? item.venue : releaseYear}</p>
                     <div class="flex flex-col space-y-2">
-                        ${!isSeries && !isWatchlist && !isScreening ? `
-                            <button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>
-                        ` : ''}
-                        ${isWatchlist ? `
-                            <button class="remove-btn btn btn-red flex-1">Remove</button>
-                        ` : ''}
-                        ${driveUrl ? `<a href="#" data-url="${driveUrl}" class="play-btn btn btn-green block text-center flex-1">${isScreening ? 'Register Now' : 'Watch Now'}</a>` : ''}
+                        ${!isSeries && !isWatchlistItem && !isScreening ? `<button class="add-btn btn btn-blue flex-1">Add to Watchlist</button>` : ''}
+                        ${isWatchlistItem ? `<button class="remove-btn btn btn-red flex-1">Remove</button>` : ''}
+                        ${driveUrl ? `<a href="#" data-url="${driveUrl}" class="play-btn btn btn-green block text-center flex-1">${buttonText}</a>` : ''}
                     </div>
                 </div>
             `;
             
-            if (!isSeries && !isWatchlist && !isScreening) {
-                const addButton = movieCard.querySelector('.add-btn');
-                if (addButton) {
-                    addButton.addEventListener('click', () => {
-                        addMovieToWatchlist({
-                            title: item.Title || null,
-                            release_date: item.Release_Date || null,
-                            poster_path: item.Poster_URL || null,
-                            drive_url: item.Drive_URL || null
-                        });
-                    });
-                }
-            } else if (isWatchlist) {
-                const removeButton = movieCard.querySelector('.remove-btn');
-                if (removeButton) {
-                    removeButton.addEventListener('click', () => {
-                        removeMovieFromWatchlist(item.id);
-                    });
-                }
-            }
-
+            movieCard.querySelector('.add-btn')?.addEventListener('click', () => addMovieToWatchlist({ title, release_date: releaseYear, poster_path: posterPath, drive_url: driveUrl }));
+            movieCard.querySelector('.remove-btn')?.addEventListener('click', () => removeMovieFromWatchlist(item.id));
+            
             const playButton = movieCard.querySelector('.play-btn');
-            if (playButton && driveUrl) {
-                if (isScreening) {
-                    playButton.addEventListener('click', (e) => {
-                        e.preventDefault();
+            if (playButton) {
+                playButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (isScreening || isSeries) {
                         window.open(driveUrl, '_blank');
-                    });
-                } else {
-                    playButton.addEventListener('click', (e) => {
-                        e.preventDefault();
+                    } else {
                         showVideoModal(driveUrl);
-                    });
-                }
+                    }
+                });
             }
             
             return movieCard;
@@ -763,46 +730,35 @@
         
         const renderScreenings = () => {
              screeningsContainer.innerHTML = '';
-             screeningsData.forEach(screening => {
-                 const screeningCard = createMovieCard(screening, false, false, true); // Use the unified card creator
-                 screeningsContainer.appendChild(screeningCard);
-             });
+             screeningsData.forEach(screening => screeningsContainer.appendChild(createMovieCard(screening)));
         };
 
-        const renderMovies = (movies, container, showAddButton) => {
+        const renderWatchlist = (movies, container) => {
             container.innerHTML = '';
-            
             if (movies.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 col-span-full">No movies found.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 col-span-full">Your watchlist is empty.</p>`;
                 return;
             }
-
-            movies.forEach(movie => {
-                const movieCard = createMovieCard(movie, false, false);
-                container.appendChild(movieCard);
-            });
+            movies.forEach(movie => container.appendChild(createMovieCard(movie, { isWatchlistItem: true })));
         };
 
-        const renderTopPicks = (movies, container) => {
+        const renderCarousel = (items, container, options = {}) => {
             container.innerHTML = '';
-            movies.forEach((movie, index) => {
-                const movieCard = createMovieCard(movie, true, false, false, index + 1);
-                container.appendChild(movieCard);
-            });
-        };
-
-        const renderCarousel = (movies, container, addRanking = false) => {
-            container.innerHTML = '';
-            movies.forEach((movie, index) => {
-                const rank = addRanking ? index + 1 : null;
-                const movieCard = createMovieCard(movie, true, false, false, rank);
-                container.appendChild(movieCard);
+            if (!items || items.length === 0) {
+                 container.innerHTML = `<p class="text-center text-gray-400">Nothing to show here yet.</p>`;
+                 return;
+            }
+            items.forEach((item, index) => {
+                const cardOptions = { ...options };
+                if (options.rank) cardOptions.rank = index + 1;
+                container.appendChild(createMovieCard(item, cardOptions));
             });
         };
         
         // --- Video Player Functions ---
         const showVideoModal = (url) => {
-            videoPlayer.src = url;
+            let embedUrl = url.includes("drive.google.com") ? url.replace(/\/view.*$/, "/preview") : url;
+            videoPlayer.src = embedUrl;
             videoModal.classList.remove('hidden');
             videoModal.classList.add('show');
         };
@@ -815,88 +771,68 @@
 
         // --- Page Navigation Functions ---
         const showPage = (pageName) => {
-            const pages = document.querySelectorAll('.page-content');
-            pages.forEach(page => page.classList.add('hidden'));
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
             document.getElementById(`${pageName}-page`).classList.remove('hidden');
             currentPage = pageName;
-            if (pageName === 'series') {
-                fetchSeriesFromGoogleSheet();
-            } else if (pageName === 'screenings') {
-                renderScreenings();
-            }
+            if (pageName === 'screenings') renderScreenings();
         };
 
         // --- Search Functionality ---
-        const filterMovies = () => {
+        const handleSearch = () => {
             const query = searchInput.value.toLowerCase();
-            const allContent = [...allMovies, ...allSeries, ...screeningsData]; // Updated search to include allSeries
-            const filteredResults = allContent.filter(item => {
-                const title = item.title || item.Title || '';
-                return title.toLowerCase().includes(query);
-            });
+            if (!query) return showPage('movies');
+
+            const allContent = [...allMovies, ...allSeries, ...screeningsData];
+            const filteredResults = allContent.filter(item => (item.title || item.Title || '').toLowerCase().includes(query));
             
             showPage('search-results');
             searchResultsContainer.innerHTML = '';
             
             if (filteredResults.length === 0) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">No results found for "${query}".</p>`;
+                searchResultsContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">No results found.</p>`;
             } else {
-                filteredResults.forEach(item => {
-                    const isSeries = !!item.title; // Check if it's a series object
-                    const resultCard = createMovieCard(item, false, isSeries);
-                    searchResultsContainer.appendChild(resultCard);
-                });
+                filteredResults.forEach(item => searchResultsContainer.appendChild(createMovieCard(item)));
             }
-        };
-
-        // --- Carousel Scroll Functionality ---
-        const scrollCarousel = (id, amount) => {
-            const carousel = document.getElementById(id);
-            carousel.scrollBy({ left: amount, behavior: 'smooth' });
         };
         
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
-            fetchMoviesFromGoogleSheet();
-            // fetchSeriesFromGoogleSheet() is now called by showPage('series')
+            loadContent();
             showPage('movies');
             
-            // Search input listener
             searchInput.addEventListener('keyup', (event) => {
                 if (event.key === 'Enter' || searchInput.value.length >= 3 || searchInput.value.length === 0) {
-                    filterMovies();
+                    handleSearch();
                 }
             });
 
-            // Navigation button event listeners
             document.getElementById('movies-btn').addEventListener('click', () => showPage('movies'));
             document.getElementById('series-btn').addEventListener('click', () => showPage('series'));
             document.getElementById('screenings-btn').addEventListener('click', () => showPage('screenings'));
             document.getElementById('watchlist-btn').addEventListener('click', () => showPage('watchlist'));
             document.getElementById('end-credits-btn').addEventListener('click', () => showPage('end-credits'));
             
-            // Modal close button
             closeModalBtn.addEventListener('click', hideVideoModal);
+            videoModal.addEventListener('click', (e) => e.target.id === 'video-modal' && hideVideoModal());
 
-            // Close modal by clicking outside
-            videoModal.addEventListener('click', (e) => {
-                if (e.target.id === 'video-modal') {
-                    hideVideoModal();
-                }
+            document.querySelectorAll('.carousel-nav-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const carouselId = button.dataset.carousel;
+                    const direction = parseInt(button.dataset.direction, 10);
+                    const carousel = document.getElementById(carouselId);
+                    if (carousel) {
+                        carousel.scrollBy({ left: 220 * direction, behavior: 'smooth' });
+                    }
+                });
             });
 
-            // Custom cursor logic
             document.addEventListener('mousemove', (e) => {
                 customCursor.style.left = `${e.clientX}px`;
                 customCursor.style.top = `${e.clientY}px`;
-                if (!customCursor.classList.contains('active')) {
-                    customCursor.classList.add('active');
-                }
+                customCursor.classList.add('active');
             });
-            document.addEventListener('mouseleave', () => {
-                customCursor.classList.remove('active');
-            });
+            document.addEventListener('mouseleave', () => customCursor.classList.remove('active'));
         });
     </script>
 </body>
