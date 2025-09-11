@@ -129,6 +129,57 @@
             border-radius: 8px 0 8px 0;
             font-size: 1.5rem;
         }
+        
+        /* Video Player Modal */
+        #video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        #video-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        #close-modal-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10001;
+        }
 
         /* End Credits Styling */
         #end-credits-page {
@@ -399,6 +450,14 @@
             <div class="credits-fade-overlay credits-fade-overlay-bottom"></div>
         </div>
     </main>
+    
+    <!-- Video Player Modal -->
+    <div id="video-modal" class="hidden">
+        <span id="close-modal-btn">&times;</span>
+        <div class="video-container">
+            <iframe id="video-player" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        </div>
+    </div>
 
     <!-- Firebase SDK Imports -->
     <script type="module">
@@ -446,6 +505,9 @@
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
         const userIdDisplay = document.getElementById('user-id-display');
+        const videoModal = document.getElementById('video-modal');
+        const videoPlayer = document.getElementById('video-player');
+        const closeModalBtn = document.getElementById('close-modal-btn');
 
         // --- Firebase Initialization and Authentication ---
         let db, auth, userId;
@@ -655,7 +717,7 @@
                         ${isWatchlist ? `
                             <button class="remove-btn btn btn-red flex-1">Remove</button>
                         ` : ''}
-                        ${driveUrl ? `<a href="${driveUrl}" target="_blank" class="btn btn-green block text-center flex-1">${isScreening ? 'Register Now' : 'Watch Now'}</a>` : ''}
+                        ${driveUrl ? `<a href="#" data-url="${driveUrl}" class="play-btn btn btn-green block text-center flex-1">${isScreening ? 'Register Now' : 'Watch Now'}</a>` : ''}
                     </div>
                 </div>
             `;
@@ -677,6 +739,21 @@
                 if (removeButton) {
                     removeButton.addEventListener('click', () => {
                         removeMovieFromWatchlist(item.id);
+                    });
+                }
+            }
+
+            const playButton = movieCard.querySelector('.play-btn');
+            if (playButton && driveUrl) {
+                if (isScreening) {
+                    playButton.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        window.open(driveUrl, '_blank');
+                    });
+                } else {
+                    playButton.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showVideoModal(driveUrl);
                     });
                 }
             }
@@ -722,7 +799,19 @@
                 container.appendChild(movieCard);
             });
         };
+        
+        // --- Video Player Functions ---
+        const showVideoModal = (url) => {
+            videoPlayer.src = url;
+            videoModal.classList.remove('hidden');
+            videoModal.classList.add('show');
+        };
 
+        const hideVideoModal = () => {
+            videoPlayer.src = ""; // Stop the video
+            videoModal.classList.remove('show');
+            videoModal.classList.add('hidden');
+        };
 
         // --- Page Navigation Functions ---
         const showPage = (pageName) => {
@@ -786,6 +875,16 @@
             document.getElementById('screenings-btn').addEventListener('click', () => showPage('screenings'));
             document.getElementById('watchlist-btn').addEventListener('click', () => showPage('watchlist'));
             document.getElementById('end-credits-btn').addEventListener('click', () => showPage('end-credits'));
+            
+            // Modal close button
+            closeModalBtn.addEventListener('click', hideVideoModal);
+
+            // Close modal by clicking outside
+            videoModal.addEventListener('click', (e) => {
+                if (e.target.id === 'video-modal') {
+                    hideVideoModal();
+                }
+            });
 
             // Custom cursor logic
             document.addEventListener('mousemove', (e) => {
