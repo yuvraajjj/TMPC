@@ -244,27 +244,41 @@
                     url.searchParams.append('cache_bust', new Date().getTime());
 
                     const response = await fetch(url.toString());
-                    if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                    if (!response.ok) throw new Error(`Network error: ${response.status} ${response.statusText}`);
                     
                     const csvText = await response.text();
+
+                    // DEBUGGING STEP: Check if we got CSV or HTML from Google
+                    if (csvText.trim().startsWith('<!DOCTYPE html>')) {
+                         console.error("Received HTML instead of CSV. Please check Google Sheet sharing settings.");
+                         throw new Error("Google Sheet is not published correctly as a public CSV.");
+                    }
+                    
                     const users = parseCSV(csvText);
+                    console.log("Parsed Users from Sheet:", users); // Log to see the parsed data
                     
                     const enteredUsername = usernameInput.value;
                     const enteredPassword = passwordInput.value;
+                    console.log(`Attempting login for user: '${enteredUsername}'`);
 
-                    const validUser = users.find(user => user.Username === enteredUsername && user.Password === enteredPassword);
+                    const validUser = users.find(user => 
+                        user.Username === enteredUsername && 
+                        user.Password === enteredPassword
+                    );
 
                     if (validUser) {
+                        console.log("Login Successful!");
                         sessionStorage.setItem('isLoggedIn', 'true');
                         window.location.href = 'homepage.html';
                     } else {
+                        console.warn("Login Failed: Invalid username or password.");
                         errorMessage.textContent = 'Invalid username or password.';
                         loginButton.textContent = 'Sign In';
                         loginButton.disabled = false;
                     }
                 } catch (error) {
                     console.error('Login Error:', error);
-                    errorMessage.textContent = 'Failed to verify credentials. Please try again.';
+                    errorMessage.textContent = 'Failed to verify. Check console for details.';
                     loginButton.textContent = 'Sign In';
                     loginButton.disabled = false;
                 }
@@ -273,6 +287,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
