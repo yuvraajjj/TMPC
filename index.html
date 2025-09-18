@@ -121,7 +121,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATvM2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv";
+            // IMPORTANT: Replace this with the NEW URL you get from following the google-sheet-guide.md file.
+            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpZR0LoDDPTVcSuvJj_rcMvfZdt5omlOBcoT7wqUrd-LGI_Bv_Ydl1e4i1H7aiXieHOjEyMgPNrQmr/pub?gid=0&single=true&output=csv";
 
             const loginForm = document.getElementById('login-form');
             const usernameInput = document.getElementById('username');
@@ -201,25 +202,19 @@
             // --- Animation Flow ---
             createPosterGrid();
 
-            // Start animations after a brief moment
             setTimeout(() => {
                 gridContainer.style.opacity = 1;
                 gridContainer.style.filter = 'blur(0px) brightness(0.6)';
-
-                // After grid is visible, hide loading overlay
                 setTimeout(() => {
                     loadingOverlay.style.opacity = 0;
                     mainContent.style.opacity = 1;
                     startQuoteRotator();
-                    
-                    // Remove overlay from DOM after transition
                     setTimeout(() => loadingOverlay.remove(), 1500);
-                }, 1500); // Duration of the splash screen
+                }, 1500);
             }, 100);
 
             // --- Login Logic ---
             const parseCSV = (text) => {
-                // Normalize line endings and then split
                 const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
                 return lines.slice(1).map(line => {
@@ -239,27 +234,23 @@
                 loginButton.disabled = true;
 
                 try {
-                    // Add a cache-busting parameter to prevent stale data
                     const url = new URL(GOOGLE_SHEET_URL);
                     url.searchParams.append('cache_bust', new Date().getTime());
 
                     const response = await fetch(url.toString());
-                    if (!response.ok) throw new Error(`Network error: ${response.status} ${response.statusText}`);
+                    if (!response.ok) throw new Error(`Network error: ${response.status}`);
                     
                     const csvText = await response.text();
 
-                    // DEBUGGING STEP: Check if we got CSV or HTML from Google
                     if (csvText.trim().startsWith('<!DOCTYPE html>')) {
-                         console.error("Received HTML instead of CSV. Please check Google Sheet sharing settings.");
-                         throw new Error("Google Sheet is not published correctly as a public CSV.");
+                         console.error("Authentication Error: Received an HTML login page from Google instead of the CSV data. This means the Google Sheet is not correctly 'Published to the web' as a CSV file with public access. Please follow the setup guide carefully.");
+                         throw new Error("Google Sheet is not published correctly.");
                     }
                     
                     const users = parseCSV(csvText);
-                    console.log("Parsed Users from Sheet:", users); // Log to see the parsed data
                     
-                    const enteredUsername = usernameInput.value;
-                    const enteredPassword = passwordInput.value;
-                    console.log(`Attempting login for user: '${enteredUsername}'`);
+                    const enteredUsername = usernameInput.value.trim();
+                    const enteredPassword = passwordInput.value.trim();
 
                     const validUser = users.find(user => 
                         user.Username === enteredUsername && 
@@ -267,18 +258,18 @@
                     );
 
                     if (validUser) {
-                        console.log("Login Successful!");
                         sessionStorage.setItem('isLoggedIn', 'true');
-                        window.location.href = 'homepage.html';
+                        // Construct a full URL to fix redirection issues in sandboxed environments.
+                        const newUrl = new URL('homepage.html', window.location.href).href;
+                        window.location.href = newUrl;
                     } else {
-                        console.warn("Login Failed: Invalid username or password.");
                         errorMessage.textContent = 'Invalid username or password.';
                         loginButton.textContent = 'Sign In';
                         loginButton.disabled = false;
                     }
                 } catch (error) {
-                    console.error('Login Error:', error);
-                    errorMessage.textContent = 'Failed to verify. Check console for details.';
+                    console.error('Login script failed:', error);
+                    errorMessage.textContent = 'Verification failed. Check sheet settings.';
                     loginButton.textContent = 'Sign In';
                     loginButton.disabled = false;
                 }
@@ -287,13 +278,4 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
