@@ -147,7 +147,7 @@
                 { quote: "What's up, danger? - Spider-Man: Into the Spider-Verse", image: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBvGZEwsFioUWvcp2U.jpg" },
                 { quote: "You're gonna need a bigger boat. - Jaws", image: "https://image.tmdb.org/t/p/w500/s2xcqOKCLe6236IUDkeBf6s114A.jpg" },
                 { quote: "They call it a Royale with cheese. - Pulp Fiction", image: "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg" },
-                { quote: "Adventure is out there! - Up", image: "https://image.tmdb.org/t/p/w500/v1uua4T3Sg2Sg36k27AlQcFgGZ4.jpg" },
+                { quote: "Adventure is out there! - Up", image: "https://image.tmdb.org/t/p/w500/v1uua4T3Sg2Sg36k27AlQcFgZ4.jpg" },
                 { quote: "You mustn't be afraid to dream a little bigger, darling. - Inception", image: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg" },
                 { quote: "Here's to the ones who dream. - La La Land", image: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdEjzEVXNaftNaw.jpg" },
                 { quote: "Once you've met someone you never really forget them. - Spirited Away", image: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
@@ -219,7 +219,8 @@
 
             // --- Login Logic ---
             const parseCSV = (text) => {
-                const lines = text.trim().split('\n');
+                // Normalize line endings and then split
+                const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
                 return lines.slice(1).map(line => {
                     const values = line.split(',').map(v => v.trim());
@@ -238,8 +239,12 @@
                 loginButton.disabled = true;
 
                 try {
-                    const response = await fetch(GOOGLE_SHEET_URL);
-                    if (!response.ok) throw new Error('Network response was not ok.');
+                    // Add a cache-busting parameter to prevent stale data
+                    const url = new URL(GOOGLE_SHEET_URL);
+                    url.searchParams.append('cache_bust', new Date().getTime());
+
+                    const response = await fetch(url.toString());
+                    if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
                     
                     const csvText = await response.text();
                     const users = parseCSV(csvText);
@@ -268,6 +273,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
