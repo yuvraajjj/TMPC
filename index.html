@@ -121,7 +121,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv";
+            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATvM2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv";
 
             const loginForm = document.getElementById('login-form');
             const usernameInput = document.getElementById('username');
@@ -214,7 +214,7 @@
                     
                     // Remove overlay from DOM after transition
                     setTimeout(() => loadingOverlay.remove(), 1500);
-                }, 3000); // Duration of the splash screen
+                }, 1500); // Duration of the splash screen
             }, 100);
 
             // --- Login Logic ---
@@ -236,13 +236,6 @@
                 errorMessage.textContent = '';
                 loginButton.textContent = 'Signing in...';
                 loginButton.disabled = true;
-
-                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv")) {
-                    errorMessage.textContent = 'Please configure the Google Sheet URL in the code.';
-                    loginButton.textContent = 'Sign In';
-                    loginButton.disabled = false;
-                    return;
-                }
 
                 try {
                     const response = await fetch(GOOGLE_SHEET_URL);
@@ -275,6 +268,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
