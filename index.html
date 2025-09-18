@@ -9,77 +9,102 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars during animation */
         }
 
-        #slideshow-container {
+        #poster-grid-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: -10%; left: -10%;
+            width: 120%; height: 120%;
             z-index: -2;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            transform: scale(1.1);
+            filter: blur(8px) brightness(0.4);
+            opacity: 0;
+            transition: filter 2s ease-in-out, opacity 2s ease-in-out;
+        }
+
+        .poster-tile {
+            width: 100%;
+            padding-bottom: 150%; /* Aspect ratio 2:3 */
             background-size: cover;
             background-position: center;
-            filter: blur(8px);
-            transform: scale(1.1);
-            transition: background-image 1.5s ease-in-out;
+            border-radius: 8px;
+            opacity: 0;
+            animation: fadeInTile 1.5s ease-in-out forwards;
         }
 
-        #overlay {
+        #loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: -1;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.5s ease-in-out;
         }
 
-        .fade-in {
-            animation: fadeIn 2s ease-in-out forwards;
+        #loading-overlay img {
+            width: 150px;
+            height: 150px;
+            animation: pulseLogo 2.5s ease-in-out infinite;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; filter: blur(5px); transform: scale(0.95); }
-            to { opacity: 1; filter: blur(0); transform: scale(1); }
+        
+        #main-content {
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
         }
 
         #quote-container {
             position: absolute;
-            bottom: 5%;
-            left: 50%;
+            bottom: 5%; left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-            max-width: 800px;
+            width: 90%; max-width: 800px;
             text-align: center;
             color: white;
             z-index: 1;
         }
 
         #quote-text {
-            font-size: 1.25rem;
-            font-style: italic;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-size: 1.25rem; font-style: italic;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             transition: opacity 1s ease-in-out;
+        }
+        
+        /* Animation Keyframes */
+        @keyframes fadeInTile {
+            to { opacity: 1; }
+        }
+
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
     </style>
 </head>
 <body class="bg-black">
 
-    <div id="slideshow-container"></div>
-    <div id="overlay"></div>
+    <div id="poster-grid-container"></div>
+    
+    <div id="loading-overlay">
+        <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo">
+    </div>
 
     <div id="quote-container">
         <p id="quote-text"></p>
     </div>
 
-    <main class="min-h-screen flex flex-col items-center justify-center p-4">
+    <main id="main-content" class="min-h-screen flex flex-col items-center justify-center p-4 relative z-1">
         <div class="text-center w-full max-w-sm">
-            <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 rounded-full fade-in">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2 fade-in" style="animation-delay: 0.2s;">The Motion Picture Club</h1>
-            <p class="text-gray-400 mb-8 fade-in" style="animation-delay: 0.4s;">IIM Kashipur</p>
+            <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 rounded-full">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
+            <p class="text-gray-400 mb-8">IIM Kashipur</p>
 
-            <form id="login-form" class="space-y-4 fade-in" style="animation-delay: 0.6s;">
+            <form id="login-form" class="space-y-4">
                 <div>
                     <input type="text" id="username" placeholder="Username" required class="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
@@ -96,9 +121,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- IMPORTANT: PASTE YOUR GOOGLE SHEET URL HERE ---
-            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv"; 
-            // ---------------------------------------------------
+            const GOOGLE_SHEET_URL = "YOUR_GOOGLE_SHEET_CSV_URL_HERE";
 
             const loginForm = document.getElementById('login-form');
             const usernameInput = document.getElementById('username');
@@ -106,32 +129,95 @@
             const errorMessage = document.getElementById('error-message');
             const loginButton = document.getElementById('login-button');
 
-            const slideshowContainer = document.getElementById('slideshow-container');
+            const gridContainer = document.getElementById('poster-grid-container');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const mainContent = document.getElementById('main-content');
             const quoteText = document.getElementById('quote-text');
-            
+
             const slides = [
-                { img: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2525&auto=format&fit=crop', quote: "May the Force be with you. - Star Wars" },
-                { img: 'https://images.unsplash.com/photo-1627843563095-2df97826c71b?q=80&w=2670&auto=format&fit=crop', quote: "I'm the king of the world! - Titanic" },
-                { img: 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=2574&auto=format&fit=crop', quote: "There's no place like home. - The Wizard of Oz" },
-                { img: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=2574&auto=format&fit=crop', quote: "To infinity and beyond! - Toy Story" },
-                { img: 'https://images.unsplash.com/photo-1604975701397-1cfdf50bd74b?q=80&w=2574&auto=format&fit=crop', quote: "Why so serious? - The Dark Knight" }
+                { quote: "May the Force be with you. - Star Wars", image: "https://image.tmdb.org/t/p/w500/6FfCtAuUrW00KbbLg3jOCbnIQv9.jpg" },
+                { quote: "I'm the king of the world! - Titanic", image: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg" },
+                { quote: "My mama always said life was like a box of chocolates. - Forrest Gump", image: "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg" },
+                { quote: "I'm gonna make him an offer he can't refuse. - The Godfather", image: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" },
+                { quote: "Get busy livin', or get busy dyin'. - The Shawshank Redemption", image: "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" },
+                { quote: "Why so serious? - The Dark Knight", image: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" },
+                { quote: "Life, uh, finds a way. - Jurassic Park", image: "https://image.tmdb.org/t/p/w500/oU7Oq2kFAAlGqbU4VoAE36g4hoI.jpg" },
+                { quote: "Mankind was born on Earth. It was never meant to die here. - Interstellar", image: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
+                { quote: "Not all those who wander are lost. - The Lord of the Rings", image: "https://image.tmdb.org/t/p/w500/2LFiPi0iF4DsX4R6Q314d4S0d4A.jpg" },
+                { quote: "What's up, danger? - Spider-Man: Into the Spider-Verse", image: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBvGZEwsFioUWvcp2U.jpg" },
+                { quote: "You're gonna need a bigger boat. - Jaws", image: "https://image.tmdb.org/t/p/w500/s2xcqOKCLe6236IUDkeBf6s114A.jpg" },
+                { quote: "They call it a Royale with cheese. - Pulp Fiction", image: "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg" },
+                { quote: "Adventure is out there! - Up", image: "https://image.tmdb.org/t/p/w500/v1uua4T3Sg2Sg36k27AlQcFgGZ4.jpg" },
+                { quote: "You mustn't be afraid to dream a little bigger, darling. - Inception", image: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg" },
+                { quote: "Here's to the ones who dream. - La La Land", image: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdEjzEVXNaftNaw.jpg" },
+                { quote: "Once you've met someone you never really forget them. - Spirited Away", image: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
+                { quote: "Not quite my tempo. - Whiplash", image: "https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg" },
+                { quote: "Oh, what a day! What a lovely day! - Mad Max: Fury Road", image: "https://image.tmdb.org/t/p/w500/8tZYtuWezp855EKor3ChlrvhB32.jpg" },
+                { quote: "Meet me in Montauk. - Eternal Sunshine of the Spotless Mind", image: "https://image.tmdb.org/t/p/w500/5MwkWH9tYge2p52A2s0AFaLchzd.jpg" },
+                { quote: "You're a wizard, Harry. - Harry Potter and the Sorcerer's Stone", image: "https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg" }
             ];
+            
+            let quoteInterval;
 
-            let currentSlide = 0;
-
-            function updateSlide() {
-                slideshowContainer.style.backgroundImage = `url('${slides[currentSlide].img}')`;
-                quoteText.style.opacity = 0;
-                setTimeout(() => {
-                    quoteText.textContent = slides[currentSlide].quote;
-                    quoteText.style.opacity = 1;
-                }, 1000);
-                currentSlide = (currentSlide + 1) % slides.length;
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
             }
 
-            updateSlide();
-            setInterval(updateSlide, 7000);
+            function createPosterGrid() {
+                const posters = [...slides, ...slides, ...slides]; // Duplicate for more density
+                shuffleArray(posters);
+                gridContainer.innerHTML = ''; // Clear existing
+                posters.forEach((slide, index) => {
+                    const tile = document.createElement('div');
+                    tile.classList.add('poster-tile');
+                    tile.style.backgroundImage = `url('${slide.image}')`;
+                    tile.style.animationDelay = `${index * 0.02}s`;
+                    gridContainer.appendChild(tile);
+                });
+            }
+            
+            function startQuoteRotator() {
+                let currentQuoteIndex = -1;
+                const updateQuote = () => {
+                    let nextQuoteIndex;
+                    do {
+                        nextQuoteIndex = Math.floor(Math.random() * slides.length);
+                    } while (nextQuoteIndex === currentQuoteIndex);
+                    currentQuoteIndex = nextQuoteIndex;
+                    
+                    quoteText.style.opacity = 0;
+                    setTimeout(() => {
+                        quoteText.textContent = slides[currentQuoteIndex].quote;
+                        quoteText.style.opacity = 1;
+                    }, 1000);
+                };
+                updateQuote();
+                quoteInterval = setInterval(updateQuote, 6000);
+            }
 
+            // --- Animation Flow ---
+            createPosterGrid();
+
+            // Start animations after a brief moment
+            setTimeout(() => {
+                gridContainer.style.opacity = 1;
+                gridContainer.style.filter = 'blur(0px) brightness(0.6)';
+
+                // After grid is visible, hide loading overlay
+                setTimeout(() => {
+                    loadingOverlay.style.opacity = 0;
+                    mainContent.style.opacity = 1;
+                    startQuoteRotator();
+                    
+                    // Remove overlay from DOM after transition
+                    setTimeout(() => loadingOverlay.remove(), 1500);
+                }, 3000); // Duration of the splash screen
+            }, 100);
+
+            // --- Login Logic ---
             const parseCSV = (text) => {
                 const lines = text.trim().split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
@@ -151,7 +237,7 @@
                 loginButton.textContent = 'Signing in...';
                 loginButton.disabled = true;
 
-                if (GOOGLE_SHEET_URL === "YOUR_GOOGLE_SHEET_CSV_URL_HERE") {
+                if (GOOGLE_SHEET_URL === "YOUR_GOOGLE_SHEET_CSV_URL_HERE" || !GOOGLE_SHEET_URL) {
                     errorMessage.textContent = 'Please configure the Google Sheet URL in the code.';
                     loginButton.textContent = 'Sign In';
                     loginButton.disabled = false;
@@ -189,6 +275,4 @@
     </script>
 </body>
 </html>
-
-
 
