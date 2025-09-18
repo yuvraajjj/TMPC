@@ -237,7 +237,7 @@
                 loginButton.textContent = 'Signing in...';
                 loginButton.disabled = true;
 
-                if (GOOGLE_SHEET_URL === "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv" || !GOOGLE_SHEET_URL) {
+                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv")) {
                     errorMessage.textContent = 'Please configure the Google Sheet URL in the code.';
                     loginButton.textContent = 'Sign In';
                     loginButton.disabled = false;
@@ -275,4 +275,7 @@
     </script>
 </body>
 </html>
+
+
+
 
