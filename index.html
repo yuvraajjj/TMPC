@@ -121,7 +121,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // IMPORTANT: Replace this with the NEW URL you get from following the google-sheet-guide.md file.
             const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpZR0LoDDPTVcSuvJj_rcMvfZdt5omlOBcoT7wqUrd-LGI_Bv_Ydl1e4i1H7aiXieHOjEyMgPNrQmr/pub?gid=0&single=true&output=csv";
 
             const loginForm = document.getElementById('login-form');
@@ -154,7 +153,7 @@
                 { quote: "Once you've met someone you never really forget them. - Spirited Away", image: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
                 { quote: "Not quite my tempo. - Whiplash", image: "https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg" },
                 { quote: "Oh, what a day! What a lovely day! - Mad Max: Fury Road", image: "https://image.tmdb.org/t/p/w500/8tZYtuWezp855EKor3ChlrvhB32.jpg" },
-                { quote: "Meet me in Montauk. - Eternal Sunshine of the Spotless Mind", image: "https://image.tmdb.org/t/p/w500/5MwkWH9tYge2p52A2s0AFaLchzd.jpg" },
+                { quote: "Meet me in Montauk. - Eternal Sunshine of the Spotless Mind", image: "https://image.tmdb.org/t/p/w500/5MwkWH99tYge2p52A2s0AFaLchzd.jpg" },
                 { quote: "You're a wizard, Harry. - Harry Potter and the Sorcerer's Stone", image: "https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg" }
             ];
             
@@ -258,9 +257,27 @@
                     );
 
                     if (validUser) {
+                        // ** MODIFICATION START **
+                        // Check if the user has a userId, which is crucial for Firestore.
+                        if (!validUser.userId || validUser.userId.trim() === '') {
+                           errorMessage.textContent = 'Login failed: User data is incomplete in sheet.';
+                           loginButton.textContent = 'Sign In';
+                           loginButton.disabled = false;
+                           return; // Stop the login process
+                        }
+
+                        // Store the essential user info in session storage.
+                        const userToStore = {
+                           name: validUser.Username,
+                           userId: validUser.userId
+                        };
+                        sessionStorage.setItem('loggedInUser', JSON.stringify(userToStore));
+                        // ** MODIFICATION END **
+
                         sessionStorage.setItem('isLoggedIn', 'true');
-                        // Construct a full URL to fix redirection issues in sandboxed environments.
-                        const newUrl = new URL('homepage.html', window.location.href).href;
+                        
+                        // Redirect to the main homepage (index.html).
+                        const newUrl = new URL('index.html', window.location.href).href;
                         window.location.href = newUrl;
                     } else {
                         errorMessage.textContent = 'Invalid username or password.';
@@ -278,4 +295,5 @@
     </script>
 </body>
 </html>
+
 
