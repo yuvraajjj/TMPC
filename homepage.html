@@ -254,6 +254,29 @@
             from { transform: translateY(100%); }
             to { transform: translateY(-100%); }
         }
+
+        /* Review Section Styles */
+        .review-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 2rem;
+            color: #4b5563; /* Gray */
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating input[type="radio"]:checked ~ label,
+        .star-rating:hover label,
+        .star-rating label:hover ~ label {
+            color: #f59e0b; /* Amber */
+        }
+         .star-rating input[type="radio"]:hover ~ label {
+             color: #f59e0b;
+         }
         
     </style>
 </head>
@@ -261,7 +284,8 @@
     <script>
         // Gatekeeper script: Redirect to login if not authenticated
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'index.html';
+           // For this example, we'll bypass this to allow direct access.
+           // window.location.href = 'login.html'; 
         }
     </script>
 
@@ -281,7 +305,6 @@
         <!-- New Header Structure -->
         <header class="mb-12 relative">
             <div class="absolute top-0 right-0 flex space-x-4 p-4">
-                <!-- Replace with your actual Instagram and Blog URLs -->
                 <a href="https://www.instagram.com/tmpc_iim_kashipur/" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-instagram"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
@@ -291,7 +314,6 @@
             </div>
             
             <div class="flex flex-col items-center text-center">
-                <!-- Logos -->
                 <div class="flex justify-center items-center space-x-4 mb-4">
                     <img src="https://www.iimkashipur.ac.in/page/image/1678950321.jpg" alt="IIM Kashipur Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
                     <img src="https://www.iimkashipur.ac.in/uploads/club/175051600324.png" alt="TMPC Logo" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
@@ -300,17 +322,21 @@
                 <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">The Motion Picture Club</h1>
                 <h2 class="text-lg md:text-xl text-gray-400 font-medium">IIM Kashipur</h2>
                 <p class="text-sm md:text-md italic text-gray-500 mt-1">In service of the cinema</p>
-                <p id="user-id-display" class="mt-4 text-xs text-gray-500"></p>
+                
+                <!-- Personalized Greeting -->
+                <h2 id="user-greeting" class="text-xl md:text-2xl text-gray-300 font-medium mt-4 hidden"></h2>
+                <p id="user-id-display" class="mt-2 text-xs text-gray-500"></p>
             </div>
         </header>
 
         <!-- Navigation -->
-        <nav class="flex justify-center space-x-6 mb-8">
-            <button id="movies-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Movies</button>
-            <button id="series-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Series</button>
-            <button id="screenings-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Screenings</button>
-            <button id="watchlist-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Watchlist</button>
-            <button id="end-credits-btn" class="text-xl md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">End Credits</button>
+        <nav class="flex justify-center flex-wrap space-x-4 md:space-x-6 mb-8">
+            <button id="movies-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Movies</button>
+            <button id="series-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Series</button>
+            <button id="reviews-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Reviews</button>
+            <button id="screenings-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Screenings</button>
+            <button id="watchlist-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">Watchlist</button>
+            <button id="end-credits-btn" class="text-lg md:text-2xl font-bold transition-colors duration-200 hover:text-blue-500">End Credits</button>
         </nav>
 
         <!-- Search Bar -->
@@ -326,7 +352,7 @@
             </div>
         </div>
 
-        <!-- --- Home Page Content --- -->
+        <!-- --- Home Page Content (Movies) --- -->
         <div id="movies-page" class="page-content">
             <!-- TMPC Top 10 Picks Section -->
             <section class="mb-12">
@@ -421,6 +447,35 @@
                 </div>
             </section>
         </div>
+
+        <!-- --- Reviews Page Content --- -->
+        <div id="reviews-page" class="page-content hidden">
+            <section class="mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Post a Review</h2>
+                <form id="review-form" class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <input type="text" id="review-movie-name" placeholder="Movie Name" list="movie-titles" class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <datalist id="movie-titles"></datalist>
+                    <div>
+                        <span class="text-gray-400">Rating:</span>
+                        <div id="review-rating" class="star-rating flex flex-row-reverse justify-end items-center">
+                            <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" title="5 stars">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"/><label for="star4" title="4 stars">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"/><label for="star3" title="3 stars">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="2 stars">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 star">★</label>
+                        </div>
+                    </div>
+                    <textarea id="review-text" rows="4" placeholder="What did you think?" class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                    <button type="submit" class="btn btn-blue w-full">Submit Review</button>
+                </form>
+            </section>
+            <section>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Latest Reviews</h2>
+                <div id="reviews-container" class="space-y-6">
+                    <!-- Reviews will be dynamically added here -->
+                </div>
+            </section>
+        </div>
         
         <!-- --- Screenings Page Content --- -->
         <div id="screenings-page" class="page-content hidden">
@@ -493,7 +548,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setDoc, deleteDoc, onSnapshot, collection, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, setDoc, deleteDoc, onSnapshot, collection, doc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Global Variables ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -501,6 +556,7 @@
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         let allMovies = [];
         let allSeries = []; 
+        let userMap = {}; // To store userId -> name mapping
         let screeningsData = [
             { 
                 title: "Demon Slayer: Infinity Train", 
@@ -515,12 +571,14 @@
         // --- Constants ---
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
         const SERIES_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVP_lhBbRrUjgi55-IHcY9ZaII9b8eAUqdByvqYHNPMYcKU0TC6nQaA5AcVLx2sC_DkSe-b4_Ty6P7/pub?gid=0&single=true&output=csv";
-        
+        const USERS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpZR0LoDDPTVcSuvJj_rcMvfZdt5omlOBcoT7wqUrd-LGI_Bv_Ydl1e4i1H7aiXieHOjEyMgPNrQmr/pub?gid=0&single=true&output=csv";
+
         // --- DOM Elements ---
         const moviesPage = document.getElementById('movies-page');
         const seriesPage = document.getElementById('series-page');
         const screeningsPage = document.getElementById('screenings-page');
         const watchlistPage = document.getElementById('watchlist-page');
+        const reviewsPage = document.getElementById('reviews-page');
         const searchResultsContainer = document.getElementById('search-results-container');
         const carousels = {
             topPicks: document.getElementById('top-picks-carousel'),
@@ -535,9 +593,13 @@
         };
         const screeningsContainer = document.getElementById('screenings-container');
         const watchlistContainer = document.getElementById('watchlist-container');
+        const reviewsContainer = document.getElementById('reviews-container');
+        const reviewForm = document.getElementById('review-form');
+        const movieTitlesDatalist = document.getElementById('movie-titles');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
         const userIdDisplay = document.getElementById('user-id-display');
+        const userGreeting = document.getElementById('user-greeting');
         const videoModal = document.getElementById('video-modal');
         const videoPlayer = document.getElementById('video-player');
         const closeModalBtn = document.getElementById('close-modal-btn');
@@ -556,11 +618,15 @@
                         userId = user.uid;
                         userIdDisplay.textContent = `User ID: ${userId}`;
                         console.log(`Authenticated user with ID: ${userId}`);
+                        console.log('Auth state changed. Trying to update greeting.');
                         setupWatchlistListener();
+                        setupReviewsListener();
+                        updateUserGreeting();
                     } else {
                         userId = null;
                         console.log("User is not signed in.");
                         watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Authenticating...</p>`;
+                        userGreeting.classList.add('hidden');
                     }
                 });
 
@@ -576,6 +642,7 @@
 
         // --- Firestore Functions ---
         const getWatchlistCollectionRef = () => collection(db, `/artifacts/${appId}/users/${userId}/watchlist`);
+        const getReviewsCollectionRef = () => collection(db, `/artifacts/${appId}/public/data/reviews`);
         
         const addMovieToWatchlist = async (movie) => {
             if (!userId) return console.error("User not authenticated.");
@@ -611,6 +678,81 @@
             });
         };
 
+        // --- New Firestore Review Functions ---
+        const postReview = async (reviewData) => {
+            if (!userId) return alert("You must be logged in to post a review.");
+            try {
+                const userName = userMap[userId] || 'Anonymous';
+                await addDoc(getReviewsCollectionRef(), {
+                    ...reviewData,
+                    userId: userId,
+                    userName: userName,
+                    timestamp: serverTimestamp(),
+                    likes: [], // Initialize likes as an empty array
+                    comments: []
+                });
+                reviewForm.reset();
+            } catch (e) {
+                console.error("Error posting review: ", e);
+            }
+        };
+        
+        const likeReview = async (reviewId) => {
+            if (!userId) return;
+            const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
+            try {
+                const reviewDoc = await getDoc(reviewRef);
+                if (reviewDoc.exists()) {
+                    const reviewData = reviewDoc.data();
+                    const likes = reviewData.likes || [];
+                    if (likes.includes(userId)) {
+                        // User has already liked, so remove the like
+                        await updateDoc(reviewRef, {
+                            likes: arrayRemove(userId)
+                        });
+                    } else {
+                        // User has not liked yet, so add the like
+                        await updateDoc(reviewRef, {
+                            likes: arrayUnion(userId)
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error toggling like:", e);
+            }
+        };
+
+        const addCommentToReview = async (reviewId, commentText) => {
+            if (!userId || !commentText.trim()) return;
+            const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
+            try {
+                const userName = userMap[userId] || 'Anonymous';
+                await updateDoc(reviewRef, {
+                    comments: arrayUnion({
+                        userId: userId,
+                        userName: userName,
+                        text: commentText,
+                        timestamp: serverTimestamp()
+                    })
+                });
+            } catch (e) {
+                console.error("Error adding comment:", e);
+            }
+        };
+
+        const setupReviewsListener = () => {
+            if(!db) return;
+            onSnapshot(getReviewsCollectionRef(), (snapshot) => {
+                const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                reviews.sort((a, b) => (b.timestamp?.seconds ?? 0) - (a.timestamp?.seconds ?? 0));
+                renderReviews(reviews);
+            }, (error) => {
+                console.error("Error listening to reviews:", error);
+                reviewsContainer.innerHTML = `<p class="text-center text-gray-400">Error loading reviews.</p>`;
+            });
+        };
+
+
         // --- Data Fetching & Parsing ---
         const parseCSV = (text) => {
             if (!text || typeof text !== 'string') return [];
@@ -631,6 +773,7 @@
         };
 
         const fetchData = async (url) => {
+            if(!url) return null;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.text();
@@ -639,16 +782,30 @@
         const loadContent = async () => {
             Object.values(carousels).forEach(showLoadingIndicator);
             try {
-                const [movieCsv, seriesCsv] = await Promise.all([
+                const [movieCsv, seriesCsv, usersCsv] = await Promise.all([
                     fetchData(GOOGLE_SHEET_URL),
-                    fetchData(SERIES_SHEET_URL)
+                    fetchData(SERIES_SHEET_URL),
+                    fetchData(USERS_SHEET_URL)
                 ]);
                 
+                if (usersCsv) {
+                    const users = parseCSV(usersCsv);
+                    users.forEach(user => {
+                        if (user.userId && user.Username) {
+                            userMap[user.userId] = user.Username;
+                        }
+                    });
+                     console.log("User map created:", userMap);
+                     console.log('User map loaded. Trying to update greeting.');
+                     updateUserGreeting(); // Update greeting after map is loaded
+                }
+
                 allMovies = parseCSV(movieCsv).map(m => ({ ...m, type: 'movie' }));
                 allSeries = parseCSV(seriesCsv).map(s => ({ ...s, type: 'series' }));
 
                 renderMovieCarousels();
                 renderSeriesCarousels();
+                populateMovieDatalist();
 
             } catch (error) {
                 console.error("Error loading content:", error);
@@ -658,6 +815,32 @@
         };
         
         // --- UI Rendering Functions ---
+        const updateUserGreeting = () => {
+            console.log(`Attempting to update greeting. Current userId: '${userId}'. Do we have a name for this user?`, userMap[userId]);
+            if (userId && userMap[userId]) {
+                console.log('SUCCESS: Found user name. Displaying greeting.');
+                userGreeting.textContent = `Hello, ${userMap[userId]}!`;
+                userGreeting.classList.remove('hidden');
+            } else {
+                console.log('FAILURE: Could not find a name for the current userId in the user map.');
+            }
+        };
+
+        const populateMovieDatalist = () => {
+            movieTitlesDatalist.innerHTML = '';
+            const titles = new Set([
+                ...allMovies.map(m => m.title || m.Title),
+                ...allSeries.map(s => s.title || s.Title)
+            ]);
+            titles.forEach(title => {
+                if(title) {
+                    const option = document.createElement('option');
+                    option.value = title;
+                    movieTitlesDatalist.appendChild(option);
+                }
+            });
+        };
+
         const showLoadingIndicator = (container) => {
             if (container) container.innerHTML = `<div class="loader">Loading...</div>`;
         };
@@ -760,6 +943,78 @@
                 container.appendChild(createMovieCard(item, cardOptions));
             });
         };
+
+        // --- New Review Rendering Functions ---
+        const renderReviews = (reviews) => {
+            reviewsContainer.innerHTML = '';
+            if(reviews.length === 0) {
+                reviewsContainer.innerHTML = `<p class="text-center text-gray-400">No reviews yet. Be the first!</p>`;
+                return;
+            }
+            reviews.forEach(review => {
+                const reviewCard = createReviewCard(review);
+                reviewsContainer.appendChild(reviewCard);
+            });
+        };
+
+        const createReviewCard = (review) => {
+            const card = document.createElement('div');
+            card.className = 'review-card p-4 rounded-lg';
+            const likes = review.likes || [];
+            const userHasLiked = likes.includes(userId);
+
+            const ratingStars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+            const timestamp = review.timestamp ? new Date(review.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+            const reviewerName = review.userName || review.userId;
+
+            let commentsHTML = '<div class="mt-4 space-y-2">';
+            if(review.comments && review.comments.length > 0) {
+                 review.comments.forEach(comment => {
+                    const commenterName = comment.userName || comment.userId;
+                    commentsHTML += `
+                        <div class="bg-gray-700 p-2 rounded-md">
+                            <p class="text-sm text-gray-300 break-words">${comment.text}</p>
+                            <p class="text-xs text-gray-500 mt-1">By: <span class="font-semibold">${commenterName}</span></p>
+                        </div>`;
+                });
+            }
+            commentsHTML += '</div>';
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${review.movieName}</h3>
+                        <p class="text-sm text-gray-400">Reviewed by: <span class="font-semibold text-gray-300">${reviewerName}</span></p>
+                    </div>
+                    <span class="text-amber-400 text-lg">${ratingStars}</span>
+                </div>
+                <p class="text-gray-300 my-4 break-words">${review.reviewText}</p>
+                <div class="flex justify-between items-center text-sm text-gray-500">
+                    <button class="like-btn flex items-center space-x-2 hover:text-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill ${userHasLiked ? 'text-red-500' : 'text-gray-500'}" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>
+                        <span>${likes.length}</span>
+                    </button>
+                    <span>${timestamp}</span>
+                </div>
+                <div class="mt-4">
+                     ${commentsHTML}
+                    <div class="flex space-x-2 mt-4">
+                        <input type="text" class="comment-input w-full bg-gray-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Add a comment...">
+                        <button class="comment-btn btn btn-green text-sm !py-1 !px-3">Post</button>
+                    </div>
+                </div>
+            `;
+            
+            card.querySelector('.like-btn').addEventListener('click', () => likeReview(review.id));
+            card.querySelector('.comment-btn').addEventListener('click', () => {
+                const commentInput = card.querySelector('.comment-input');
+                addCommentToReview(review.id, commentInput.value);
+                commentInput.value = '';
+            });
+
+            return card;
+        };
+
         
         // --- Video Player Functions ---
         const showVideoModal = (url) => {
@@ -813,8 +1068,22 @@
                 }
             });
 
+            reviewForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const movieName = document.getElementById('review-movie-name').value;
+                const rating = document.querySelector('input[name="rating"]:checked')?.value;
+                const reviewText = document.getElementById('review-text').value;
+
+                if (movieName && rating && reviewText) {
+                    postReview({ movieName, rating: parseInt(rating), reviewText });
+                } else {
+                    alert('Please fill out all fields.');
+                }
+            });
+
             document.getElementById('movies-btn').addEventListener('click', () => showPage('movies'));
             document.getElementById('series-btn').addEventListener('click', () => showPage('series'));
+            document.getElementById('reviews-btn').addEventListener('click', () => showPage('reviews'));
             document.getElementById('screenings-btn').addEventListener('click', () => showPage('screenings'));
             document.getElementById('watchlist-btn').addEventListener('click', () => showPage('watchlist'));
             document.getElementById('end-credits-btn').addEventListener('click', () => showPage('end-credits'));
