@@ -121,7 +121,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMZJcAoi9-4PFlpY7YcGDqbi0nYx46EbEVoQtxR8AWbRckX3wIo-JYretABblrATv2MnI9Nd1PPLy9/pub?gid=0&single=true&output=csv";
+            const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpZR0LoDDPTVcSuvJj_rcMvfZdt5omlOBcoT7wqUrd-LGI_Bv_Ydl1e4i1H7aiXieHOjEyMgPNrQmr/pub?gid=0&single=true&output=csv";
 
             const loginForm = document.getElementById('login-form');
             const usernameInput = document.getElementById('username');
@@ -216,27 +216,13 @@
             const parseCSV = (text) => {
                 const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
-                const usersData = lines.slice(1).map(line => {
+                return lines.slice(1).map(line => {
                     const values = line.split(',').map(v => v.trim());
                     let obj = {};
                     headers.forEach((header, i) => {
                         obj[header] = values[i];
                     });
                     return obj;
-                });
-
-                // Find the actual header for userId, case-insensitively
-                const userIdHeader = headers.find(h => h.toLowerCase() === 'userid');
-                if (!userIdHeader) {
-                    console.warn("Could not find a 'userId' column in the sheet.");
-                }
-                
-                // Normalize the data to use a consistent 'userId' key
-                return usersData.map(user => {
-                    if (userIdHeader && user[userIdHeader]) {
-                        user.userId = user[userIdHeader]; // Create a consistent key
-                    }
-                    return user;
                 });
             };
 
@@ -256,8 +242,8 @@
                     const csvText = await response.text();
 
                     if (csvText.trim().startsWith('<!DOCTYPE html>')) {
-                         console.error("Authentication Error: Received an HTML login page from Google instead of the CSV data. This means the Google Sheet is not correctly 'Published to the web' as a CSV file with public access. Please follow the setup guide carefully.");
-                         throw new Error("Google Sheet is not published correctly.");
+                        console.error("Authentication Error: Received an HTML login page from Google instead of the CSV data. This means the Google Sheet is not correctly 'Published to the web' as a CSV file with public access.");
+                        throw new Error("Google Sheet is not published correctly.");
                     }
                     
                     const users = parseCSV(csvText);
@@ -271,18 +257,21 @@
                     );
 
                     if (validUser) {
-                        // Check for the normalized userId key
-                        if (!validUser.userId || validUser.userId.trim() === '') {
+                        // Based on the sheet, 'Username' is the ID and 'userId' is the display name.
+                        const actualUserId = validUser.Username;
+                        const actualUserName = validUser.userId;
+
+                        if (!actualUserId || !actualUserName) {
                             errorMessage.textContent = 'Login failed: User data is incomplete in sheet.';
                             loginButton.textContent = 'Sign In';
                             loginButton.disabled = false;
-                            return; // Stop the login process
+                            return;
                         }
 
-                        // Store the essential user info in session storage.
+                        // Store the user info correctly in session storage.
                         const userToStore = {
-                            name: validUser.Username,
-                            userId: validUser.userId
+                            name: actualUserName, // The display name, e.g., "Yuvraj Ghimire"
+                            userId: actualUserId  // The unique ID, e.g., "MBA25242"
                         };
                         sessionStorage.setItem('loggedInUser', JSON.stringify(userToStore));
                         sessionStorage.setItem('isLoggedIn', 'true');
@@ -306,5 +295,3 @@
     </script>
 </body>
 </html>
-
-
