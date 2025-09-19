@@ -101,20 +101,37 @@
             transform: translateY(0);
         }
 
+        /* Replaced @apply with standard CSS for button styles */
         .btn {
-            @apply px-4 py-2 rounded-lg font-semibold transition-colors duration-200;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
         }
 
         .btn-blue {
-            @apply bg-blue-600 hover:bg-blue-700 text-white;
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-blue:hover {
+            background-color: #1d4ed8;
         }
 
         .btn-green {
-            @apply bg-green-600 hover:bg-green-700 text-white;
+            background-color: #16a34a;
+            color: white;
+        }
+        .btn-green:hover {
+            background-color: #15803d;
         }
 
         .btn-red {
-            @apply bg-red-600 hover:bg-red-700 text-white;
+            background-color: #dc2626;
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #b91c1c;
         }
 
         .carousel-container {
@@ -269,14 +286,25 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        .star-rating input[type="radio"]:checked ~ label,
-        .star-rating:hover label,
-        .star-rating label:hover ~ label {
-            color: #f59e0b; /* Amber */
-        }
-         .star-rating input[type="radio"]:hover ~ label {
+        
+        /* --- Improved Star Rating CSS --- */
+        /* Color stars when a radio button is checked */
+        .star-rating input[type="radio"]:checked ~ label {
              color: #f59e0b;
-         }
+        }
+        /* Color stars on hover */
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+             color: #f59e0b;
+        }
+        /* When not hovering, revert to the checked state's color */
+        .star-rating:not(:hover) input[type="radio"]:checked ~ label {
+             color: #f59e0b;
+        }
+        /* When not hovering, un-checked stars should be gray */
+        .star-rating:not(:hover) input[type="radio"]:not(:checked) ~ label {
+            color: #4b5563;
+        }
         
     </style>
 </head>
@@ -305,11 +333,11 @@
         <!-- New Header Structure -->
         <header class="mb-12 relative">
             <div class="absolute top-0 right-0 flex space-x-4 p-4">
-                <a href="https://www.instagram.com/tmpc_iim_kashipur/" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200">
+                <a href="https://www.instagram.com/tmpc_iim_kashipur/" target="_blank" class="text-white hover:text-pink-500 transition-colors duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-instagram"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
-                <a href="https://letterboxd.com/tmpc/" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                <a href="https://letterboxd.com/tmpc/" target="_blank" class="text-white hover:text-green-400 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-film"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
                 </a>
             </div>
             
@@ -680,7 +708,7 @@
 
         // --- New Firestore Review Functions ---
         const postReview = async (reviewData) => {
-            if (!userId) return alert("You must be logged in to post a review.");
+            if (!userId) return;
             try {
                 const userName = userMap[userId] || 'Anonymous';
                 await addDoc(getReviewsCollectionRef(), {
@@ -791,8 +819,10 @@
                 if (usersCsv) {
                     const users = parseCSV(usersCsv);
                     users.forEach(user => {
-                        if (user.userId && user.Username) {
-                            userMap[user.userId] = user.Username;
+                        // CODE FIX: Swap key and value to match the spreadsheet structure.
+                        // The spreadsheet has the ID in the 'Username' column and the name in the 'userId' column.
+                        if (user.Username && user.userId) {
+                            userMap[user.Username] = user.userId;
                         }
                     });
                      console.log("User map created:", userMap);
@@ -886,7 +916,7 @@
             }
 
             movieCard.innerHTML = `
-                <img src="${posterPath}" alt="${title} Poster" class="rounded-lg w-full h-auto">
+                <img src="${posterPath}" alt="${title} Poster" class="rounded-lg">
                 ${rank ? `<div class="rating-overlay">${rank}</div>` : ''}
                 <div class="movie-info p-4">
                     <h3 class="text-lg font-semibold truncate">${title}</h3>
@@ -970,13 +1000,13 @@
             let commentsHTML = '<div class="mt-4 space-y-2">';
             if(review.comments && review.comments.length > 0) {
                  review.comments.forEach(comment => {
-                    const commenterName = comment.userName || comment.userId;
-                    commentsHTML += `
-                        <div class="bg-gray-700 p-2 rounded-md">
-                            <p class="text-sm text-gray-300 break-words">${comment.text}</p>
-                            <p class="text-xs text-gray-500 mt-1">By: <span class="font-semibold">${commenterName}</span></p>
-                        </div>`;
-                });
+                     const commenterName = comment.userName || comment.userId;
+                     commentsHTML += `
+                         <div class="bg-gray-700 p-2 rounded-md">
+                             <p class="text-sm text-gray-300 break-words">${comment.text}</p>
+                             <p class="text-xs text-gray-500 mt-1">By: <span class="font-semibold">${commenterName}</span></p>
+                         </div>`;
+                 });
             }
             commentsHTML += '</div>';
 
@@ -997,7 +1027,7 @@
                     <span>${timestamp}</span>
                 </div>
                 <div class="mt-4">
-                     ${commentsHTML}
+                      ${commentsHTML}
                     <div class="flex space-x-2 mt-4">
                         <input type="text" class="comment-input w-full bg-gray-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Add a comment...">
                         <button class="comment-btn btn btn-green text-sm !py-1 !px-3">Post</button>
@@ -1041,7 +1071,10 @@
         // --- Search Functionality ---
         const handleSearch = () => {
             const query = searchInput.value.toLowerCase();
-            if (!query) return showPage('movies');
+            if (!query) {
+                showPage('movies');
+                return;
+            }
 
             const allContent = [...allMovies, ...allSeries, ...screeningsData];
             const filteredResults = allContent.filter(item => (item.title || item.Title || '').toLowerCase().includes(query));
@@ -1077,7 +1110,8 @@
                 if (movieName && rating && reviewText) {
                     postReview({ movieName, rating: parseInt(rating), reviewText });
                 } else {
-                    alert('Please fill out all fields.');
+                    // Replaced alert with a more modern approach if needed, but alert is fine for simple validation.
+                    console.log('Please fill out all fields.');
                 }
             });
 
