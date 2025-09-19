@@ -253,7 +253,6 @@
             text-align: center;
             color: white;
             padding: 2rem 1rem;
-            /* Faster animation */
             animation: scroll-credits 60s linear infinite;
         }
 
@@ -279,38 +278,16 @@
             to { transform: translateY(-100%); }
         }
 
-        /* Review Section Styles */
-        .review-card {
-            background-color: rgba(255, 255, 255, 0.05);
+        /* New Review Section Styles */
+        .review-card-sheet {
+            background-color: rgba(31, 41, 55, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
-        .star-rating input[type="radio"] {
-            display: none;
-        }
-        .star-rating label {
-            font-size: 2rem;
-            color: #4b5563; /* Gray */
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        /* --- Improved Star Rating CSS --- */
-        /* Color stars when a radio button is checked */
-        .star-rating input[type="radio"]:checked ~ label {
-             color: #f59e0b;
-        }
-        /* Color stars on hover */
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-             color: #f59e0b;
-        }
-        /* When not hovering, revert to the checked state's color */
-        .star-rating:not(:hover) input[type="radio"]:checked ~ label {
-             color: #f59e0b;
-        }
-        /* When not hovering, un-checked stars should be gray */
-        .star-rating:not(:hover) input[type="radio"]:not(:checked) ~ label {
-            color: #4b5563;
+        .review-card-sheet:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
     </style>
@@ -319,7 +296,6 @@
     <script>
         // Gatekeeper script: Redirect to login if not authenticated
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-           // Redirect to the login page if the user is not authenticated.
            window.location.href = 'login.html'; 
         }
     </script>
@@ -485,30 +461,10 @@
 
         <!-- --- Reviews Page Content --- -->
         <div id="reviews-page" class="page-content hidden">
-            <section class="mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Post a Review</h2>
-                <form id="review-form" class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
-                    <input type="text" id="review-movie-name" placeholder="Movie Name" list="movie-titles" class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <datalist id="movie-titles"></datalist>
-                    <div>
-                        <span class="text-gray-400">Rating:</span>
-                        <div id="review-rating" class="star-rating flex flex-row-reverse justify-end items-center">
-                            <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars">★</label>
-                            <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars">★</label>
-                            <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars">★</label>
-                            <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars">★</label>
-                            <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">★</label>
-                        </div>
-                    </div>
-                    <textarea id="review-text" rows="4" placeholder="What did you think?" class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
-                    <p id="review-error-message" class="text-red-400 text-sm text-center hidden"></p>
-                    <button type="submit" class="btn btn-blue w-full">Submit Review</button>
-                </form>
-            </section>
-            <section>
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Latest Reviews</h2>
+             <section>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Our Reviews</h2>
                 <div id="reviews-container" class="space-y-6">
-                    <!-- Reviews will be dynamically added here -->
+                    <!-- Reviews from Google Sheet will be dynamically added here -->
                 </div>
             </section>
         </div>
@@ -584,7 +540,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setDoc, deleteDoc, onSnapshot, collection, doc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, setDoc, deleteDoc, onSnapshot, collection, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Global Variables ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -609,6 +565,8 @@
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZs7j4FbPrLuZfFIJ3_GU81sxg88M_1Dgeknw3-atgGCUUtpA6918M6whTq3INJolANybqi1U2NfO9/pub?gid=0&single=true&output=csv";
         const SERIES_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVP_lhBbRrUjgi55-IHcY9ZaII9b8eAUqdByvqYHNPMYcKU0TC6nQaA5AcVLx2sC_DkSe-b4_Ty6P7/pub?gid=0&single=true&output=csv";
         const USERS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpZR0LoDDPTVcSuvJj_rcMvfZdt5omlOBcoT7wqUrd-LGI_Bv_Ydl1e4i1H7aiXieHOjEyMgPNrQmr/pub?gid=0&single=true&output=csv";
+        // !!! IMPORTANT: REPLACE THIS URL with your actual published Google Sheet CSV URL
+        const REVIEWS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTm8-wSW3JJg9_ybtZYYfsLKo7ikF5zsDgCeaj72CmOzKMF9iZ8CabP_qDe6_05OBXLklVYk3fNAIeU/pub?gid=0&single=true&output=csv"; // <--- REPLACED THIS
 
         // --- DOM Elements ---
         const moviesPage = document.getElementById('movies-page');
@@ -631,8 +589,6 @@
         const screeningsContainer = document.getElementById('screenings-container');
         const watchlistContainer = document.getElementById('watchlist-container');
         const reviewsContainer = document.getElementById('reviews-container');
-        const reviewForm = document.getElementById('review-form');
-        const movieTitlesDatalist = document.getElementById('movie-titles');
         const searchInput = document.getElementById('search-input');
         const customCursor = document.getElementById('custom-cursor');
         const userIdDisplay = document.getElementById('user-id-display');
@@ -652,18 +608,15 @@
                 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        firebaseUserId = user.uid; // Keep track of Firebase UID for Firestore rules
+                        firebaseUserId = user.uid; 
                         console.log(`Authenticated with Firebase UID: ${firebaseUserId}`);
-                        // Firestore listeners can now be set up
                         setupWatchlistListener();
-                        setupReviewsListener();
                     } else {
                         firebaseUserId = null;
                         console.log("User is not signed in to Firebase.");
                     }
                 });
 
-                // We still sign in to Firebase to interact with Firestore
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
@@ -674,9 +627,8 @@
             }
         };
 
-        // --- Firestore Functions ---
+        // --- Firestore Watchlist Functions (Kept as is) ---
         const getWatchlistCollectionRef = () => collection(db, `/artifacts/${appId}/users/${firebaseUserId}/watchlist`);
-        const getReviewsCollectionRef = () => collection(db, `/artifacts/${appId}/public/data/reviews`);
         
         const addMovieToWatchlist = async (movie) => {
             if (!firebaseUserId) return console.error("User not authenticated with Firebase.");
@@ -712,160 +664,114 @@
             });
         };
 
-        // --- New Firestore Review Functions ---
-        const postReview = async (reviewData) => {
-            console.log("Starting postReview...");
-            if (!currentUser || !firebaseUserId) {
-                console.error("User not fully authenticated. Cannot post review.");
-                return;
-            }
-
-            const allContent = [...allMovies, ...allSeries];
-            console.log(`Searching for movie: "${reviewData.movieName}"`);
-
-            const movieDetails = allContent.find(m => 
-                (m.title || m.Title || '').toLowerCase().trim() === reviewData.movieName.toLowerCase().trim()
-            );
-
-            if (movieDetails) {
-                console.log("Found movie details:", movieDetails);
-            } else {
-                console.log("No movie details found. Using placeholder poster.");
-            }
-
-            const moviePosterUrl = movieDetails ? (movieDetails.poster_path || movieDetails.Poster_URL) : 'https://placehold.co/150x225/1e293b/d1d5db?text=No+Poster';
-
-            const reviewToPost = {
-                movieName: reviewData.movieName,
-                rating: reviewData.rating,
-                reviewText: reviewData.reviewText,
-                userId: currentUser.userId,
-                userName: currentUser.name,
-                moviePosterUrl: moviePosterUrl,
-                timestamp: serverTimestamp(),
-                likes: [],
-                comments: []
-            };
-            
-            console.log("Attempting to post review with data:", reviewToPost);
-
-            try {
-                const docRef = await addDoc(getReviewsCollectionRef(), reviewToPost);
-                console.log("Review posted successfully with ID: ", docRef.id);
-                reviewForm.reset();
-            } catch (e) {
-                console.error("Error posting review to Firestore: ", e);
-            }
-        };
-        
-        const likeReview = async (reviewId) => {
-            if (!currentUser || !firebaseUserId) return;
-            const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
-            try {
-                const reviewDoc = await getDoc(reviewRef);
-                if (reviewDoc.exists()) {
-                    const reviewData = reviewDoc.data();
-                    const likes = reviewData.likes || [];
-                    if (likes.includes(currentUser.userId)) {
-                        await updateDoc(reviewRef, { likes: arrayRemove(currentUser.userId) });
-                    } else {
-                        await updateDoc(reviewRef, { likes: arrayUnion(currentUser.userId) });
-                    }
-                }
-            } catch (e) {
-                console.error("Error toggling like:", e);
-            }
-        };
-
-        const addCommentToReview = async (reviewId, commentText) => {
-            if (!currentUser || !firebaseUserId || !commentText.trim()) return;
-            const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
-            try {
-                await updateDoc(reviewRef, {
-                    comments: arrayUnion({
-                        userId: currentUser.userId,
-                        userName: currentUser.name,
-                        text: commentText,
-                        timestamp: serverTimestamp()
-                    })
-                });
-            } catch (e) {
-                console.error("Error adding comment:", e);
-            }
-        };
-
-        const setupReviewsListener = () => {
-            if(!db) return;
-            console.log("Setting up reviews listener...");
-            onSnapshot(getReviewsCollectionRef(), (snapshot) => {
-                const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Received reviews snapshot:", reviews);
-                reviews.sort((a, b) => (b.timestamp?.seconds ?? 0) - (a.timestamp?.seconds ?? 0));
-                renderReviews(reviews);
-            }, (error) => {
-                console.error("Error listening to reviews:", error);
-                reviewsContainer.innerHTML = `<p class="text-center text-gray-400">Error loading reviews.</p>`;
-            });
-        };
 
         // --- Data Fetching & Parsing ---
         const parseCSV = (text) => {
             if (!text || typeof text !== 'string') return [];
-            const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
-            if (lines.length < 2) return [];
-            const headers = lines[0].split(',').map(h => h.trim());
-            if (headers.length === 0 || (headers.length === 1 && headers[0] === '')) return [];
+            
+            const rows = [];
+            let currentRow = [];
+            let currentField = '';
+            let inQuotes = false;
 
-            return lines.slice(1).map(line => {
-                if (!line.trim()) return null;
-                const values = line.split(',');
-                let obj = {};
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i+1];
+
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') {
+                        currentField += '"';
+                        i++; // Skip next quote
+                    } else if (char === '"') {
+                        inQuotes = false;
+                    } else {
+                        currentField += char;
+                    }
+                } else {
+                    if (char === '"') {
+                        inQuotes = true;
+                    } else if (char === ',') {
+                        currentRow.push(currentField);
+                        currentField = '';
+                    } else if (char === '\n' || char === '\r') {
+                        if(nextChar === '\n' && char === '\r') i++; // Handle CRLF
+                        if(currentField || currentRow.length > 0) {
+                           currentRow.push(currentField);
+                           rows.push(currentRow);
+                           currentRow = [];
+                           currentField = '';
+                        }
+                    } else {
+                        currentField += char;
+                    }
+                }
+            }
+            if (currentField || currentRow.length > 0) {
+                 currentRow.push(currentField);
+                 rows.push(currentRow);
+            }
+            
+            if (rows.length < 2) return [];
+            const headers = rows[0].map(h => h.trim());
+            
+            return rows.slice(1).map(row => {
+                if (row.length === 0 || (row.length === 1 && !row[0])) return null;
+                const obj = {};
                 headers.forEach((header, i) => {
-                    obj[header] = (values[i] || '').trim();
+                    obj[header] = (row[i] || '').trim();
                 });
                 return obj;
-            }).filter(item => item !== null);
+            }).filter(item => item !== null && Object.values(item).some(v => v));
         };
 
         const fetchData = async (url) => {
             if(!url) return null;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.text();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.text();
+            } catch (error) {
+                 console.error(`Failed to fetch from ${url}:`, error);
+                 return null; // Return null on error
+            }
         };
 
         const loadContent = async () => {
             Object.values(carousels).forEach(showLoadingIndicator);
+            reviewsContainer.innerHTML = `<div class="loader">Loading Reviews...</div>`;
+
             try {
-                const [movieCsv, seriesCsv, usersCsv] = await Promise.all([
+                const [movieCsv, seriesCsv, usersCsv, reviewsCsv] = await Promise.all([
                     fetchData(GOOGLE_SHEET_URL),
                     fetchData(SERIES_SHEET_URL),
-                    fetchData(USERS_SHEET_URL)
+                    fetchData(USERS_SHEET_URL),
+                    fetchData(REVIEWS_SHEET_URL)
                 ]);
                 
                 if (usersCsv) {
                     const users = parseCSV(usersCsv);
                     users.forEach(user => {
-                        // The spreadsheet has the ID in the 'Username' column and the name in the 'userId' column.
                         if (user.Username && user.userId) {
                             userMap[user.Username] = user.userId;
                         }
                     });
                 }
 
-                allMovies = parseCSV(movieCsv).map(m => ({ ...m, type: 'movie' }));
-                allSeries = parseCSV(seriesCsv).map(s => ({ ...s, type: 'series' }));
+                allMovies = movieCsv ? parseCSV(movieCsv).map(m => ({ ...m, type: 'movie' })) : [];
+                allSeries = seriesCsv ? parseCSV(seriesCsv).map(s => ({ ...s, type: 'series' })) : [];
+                const reviewsData = reviewsCsv ? parseCSV(reviewsCsv) : [];
 
                 renderMovieCarousels();
-                renderSeriesCarousels();
-                populateMovieDatalist();
+            renderSeriesCarousels();
+            renderGoogleSheetReviews(reviewsData);
 
-            } catch (error) {
-                console.error("Error loading content:", error);
-                moviesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load content.</p>`;
-                seriesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load content.</p>`;
-            }
-        };
+        } catch (error) {
+            console.error("Error loading content:", error);
+            moviesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load movie content.</p>`;
+            seriesPage.innerHTML = `<p class="text-white text-center text-lg">Failed to load series content.</p>`;
+            reviewsContainer.innerHTML = `<p class="text-white text-center text-lg">Failed to load reviews.</p>`;
+        }
+    };
         
         // --- UI Rendering Functions ---
         const updateUserGreeting = () => {
@@ -876,21 +782,6 @@
             } else {
                  console.log('Could not find user info to display greeting.');
             }
-        };
-
-        const populateMovieDatalist = () => {
-            movieTitlesDatalist.innerHTML = '';
-            const titles = new Set([
-                ...allMovies.map(m => m.title || m.Title),
-                ...allSeries.map(s => s.title || s.Title)
-            ]);
-            titles.forEach(title => {
-                if(title) {
-                    const option = document.createElement('option');
-                    option.value = title;
-                    movieTitlesDatalist.appendChild(option);
-                }
-            });
         };
 
         const showLoadingIndicator = (container) => {
@@ -997,81 +888,73 @@
         };
 
         // --- New Review Rendering Functions ---
-        const renderReviews = (reviews) => {
+        const generateStarsHTML = (ratingOutOf10) => {
+            if (isNaN(ratingOutOf10) || ratingOutOf10 < 0 || ratingOutOf10 > 10) {
+                return '<span class="text-sm text-gray-500">No rating</span>';
+            }
+            const ratingOutOf5 = ratingOutOf10 / 2;
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= ratingOutOf5) {
+                    // Full star
+                    starsHTML += '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill text-amber-400" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>';
+                } else if (i - 0.5 <= ratingOutOf5) {
+                    // Half star
+                    starsHTML += '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-half text-amber-400" viewBox="0 0 16 16"><path d="M5.354 5.119 7.538.792A.516.516 0 0 1 8 .5c.183 0 .366.097.465.292l2.184 4.327 4.898.696A.537.537 0 0 1 16 6.32a.548.548 0 0 1-.17.445l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256a.5.5 0 0 1-.146.05c-.342.06-.668-.254-.6-.642l.83-4.73L.173 6.765a.55.55 0 0 1 .02-.512A.538.538 0 0 1 .634 6a.548.548 0 0 1 .417.223l3.523 3.356L8.354 2.119a.5.5 0 0 1 .465-.312Z M8 15V.5a.5.5 0 0 1 .5.5v14a.5.5 0 0 1-.5.5Z"/></svg>';
+                } else {
+                    // Empty star
+                    starsHTML += '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star text-gray-600" viewBox="0 0 16 16"><path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283-.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/></svg>';
+                }
+            }
+            return `<div class="flex items-center">${starsHTML}</div>`;
+        };
+
+        const createSheetReviewCard = (review) => {
+            const card = document.createElement('div');
+            card.className = 'review-card-sheet rounded-lg p-4 flex items-start space-x-4 justify-between';
+
+            const rating = parseFloat(review.rating);
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.reviewerName)}&background=2563eb&color=fff&rounded=true&size=48`;
+            const posterUrl = review.moviePosterUrl || 'https://placehold.co/150x225/1e293b/d1d5db?text=No+Poster';
+
+            card.innerHTML = `
+                <div class="flex items-start space-x-4 flex-grow">
+                    <div class="flex-shrink-0">
+                        <img src="${avatarUrl}" alt="${review.reviewerName}" class="w-12 h-12 rounded-full border-2 border-gray-600">
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex flex-wrap items-center gap-x-2 text-sm text-gray-400 mb-2">
+                            <span>Review by</span>
+                            <span class="font-bold text-white">${review.reviewerName}</span>
+                            <span>for</span>
+                            <span class="font-bold text-white">${review.movieName}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            ${generateStarsHTML(rating)}
+                            <span class="text-gray-400 text-sm font-semibold">${review.rating}/10</span>
+                        </div>
+                        <p class="text-gray-200 text-lg leading-relaxed italic">
+                            "${review.reviewText}"
+                        </p>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 ml-4">
+                     <img src="${posterUrl}" alt="${review.movieName} Poster" class="w-24 md:w-32 rounded-lg shadow-lg" onerror="this.onerror=null;this.src='https://placehold.co/150x225/1e293b/d1d5db?text=No+Poster';">
+                </div>
+            `;
+            return card;
+        };
+
+        const renderGoogleSheetReviews = (reviews) => {
             reviewsContainer.innerHTML = '';
-            if(reviews.length === 0) {
-                reviewsContainer.innerHTML = `<p class="text-center text-gray-400">No reviews yet. Be the first!</p>`;
+            if (!reviews || reviews.length === 0) {
+                reviewsContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">No reviews from junior members yet.</p>`;
                 return;
             }
             reviews.forEach(review => {
-                const reviewCard = createReviewCard(review);
+                const reviewCard = createSheetReviewCard(review);
                 reviewsContainer.appendChild(reviewCard);
             });
-        };
-
-        const createReviewCard = (review) => {
-            const card = document.createElement('div');
-            card.className = 'review-card p-4 rounded-lg flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4';
-            
-            const likes = review.likes || [];
-            const userHasLiked = currentUser && likes.includes(currentUser.userId);
-            const ratingStars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-            const timestamp = review.timestamp ? new Date(review.timestamp.seconds * 1000).toLocaleString() : 'Just now';
-            const reviewerName = userMap[review.userId] || review.userName || review.userId;
-            const posterUrl = review.moviePosterUrl || 'https://placehold.co/150x225/1e293b/d1d5db?text=No+Poster';
-
-            let commentsHTML = '<div class="mt-4 space-y-2">';
-            if (review.comments && review.comments.length > 0) {
-                 const sortedComments = [...review.comments].sort((a,b) => (a.timestamp?.seconds ?? 0) - (b.timestamp?.seconds ?? 0));
-                 sortedComments.forEach(comment => {
-                    const commenterName = userMap[comment.userId] || comment.userName || comment.userId;
-                    commentsHTML += `
-                        <div class="bg-gray-700 p-2 rounded-md">
-                            <p class="text-sm text-gray-300 break-words">${comment.text}</p>
-                            <p class="text-xs text-gray-500 mt-1">By: <span class="font-semibold">${commenterName}</span></p>
-                        </div>`;
-                });
-            }
-            commentsHTML += '</div>';
-
-            card.innerHTML = `
-                <div class="flex-shrink-0 w-32 mx-auto md:mx-0">
-                    <img src="${posterUrl}" alt="${review.movieName} Poster" class="w-full h-auto rounded-md shadow-lg" onerror="this.onerror=null;this.src='https://placehold.co/150x225/1e293b/d1d5db?text=No+Poster';">
-                </div>
-                <div class="flex-grow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-xl font-bold text-white">${review.movieName}</h3>
-                            <p class="text-sm text-gray-400">Reviewed by: <span class="font-semibold text-gray-300">${reviewerName}</span></p>
-                        </div>
-                        <span class="text-amber-400 text-lg flex-shrink-0 ml-4">${ratingStars}</span>
-                    </div>
-                    <p class="text-gray-300 my-4 break-words">${review.reviewText}</p>
-                    <div class="flex justify-between items-center text-sm text-gray-500">
-                        <button class="like-btn flex items-center space-x-2 hover:text-red-500 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill ${userHasLiked ? 'text-red-500' : 'text-gray-500'}" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>
-                            <span>${likes.length}</span>
-                        </button>
-                        <span>${timestamp}</span>
-                    </div>
-                    <div class="mt-4">
-                        ${commentsHTML}
-                        <div class="flex space-x-2 mt-4">
-                            <input type="text" class="comment-input w-full bg-gray-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Add a comment...">
-                            <button class="comment-btn btn btn-green text-sm !py-1 !px-3">Post</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            card.querySelector('.like-btn').addEventListener('click', () => likeReview(review.id));
-            card.querySelector('.comment-btn').addEventListener('click', () => {
-                const commentInput = card.querySelector('.comment-input');
-                addCommentToReview(review.id, commentInput.value);
-                commentInput.value = '';
-            });
-
-            return card;
         };
         
         // --- Video Player Functions ---
@@ -1119,56 +1002,24 @@
         
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Retrieve user info from session storage first
             const loggedInUserString = sessionStorage.getItem('loggedInUser');
             if (loggedInUserString) {
                 try {
                     currentUser = JSON.parse(loggedInUserString);
                 } catch(e) {
                     console.error("Failed to parse user data from session storage.", e);
-                    window.location.href = 'login.html'; // Corrupted data, force re-login
+                    window.location.href = 'login.html';
                 }
             }
             
             initFirebase();
             loadContent();
-            updateUserGreeting(); // Call this immediately
+            updateUserGreeting(); 
             showPage('movies');
             
             searchInput.addEventListener('keyup', (event) => {
                 if (event.key === 'Enter' || searchInput.value.length >= 3 || searchInput.value.length === 0) {
                     handleSearch();
-                }
-            });
-
-            reviewForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const errorMessage = document.getElementById('review-error-message');
-                errorMessage.classList.add('hidden'); // Hide on new submission
-
-                const movieName = document.getElementById('review-movie-name').value;
-                const ratingElement = document.querySelector('input[name="rating"]:checked');
-                const reviewText = document.getElementById('review-text').value;
-
-                console.log('Checked rating element:', ratingElement); // Debugging line
-
-                if (!ratingElement) {
-                    errorMessage.textContent = 'Please select a star rating.';
-                    errorMessage.classList.remove('hidden');
-                    console.log('Validation failed: Rating not selected.');
-                    return; // Stop the function
-                }
-                
-                const rating = ratingElement.value;
-                console.log(`Rating selected: ${rating}`); // Debugging line
-
-                if (movieName && rating && reviewText) {
-                    console.log('All fields valid. Posting review...');
-                    postReview({ movieName, rating: parseInt(rating), reviewText });
-                } else {
-                    errorMessage.textContent = 'Please fill out all fields.';
-                    errorMessage.classList.remove('hidden');
-                    console.log('Validation failed: One or more fields are empty.');
                 }
             });
 
@@ -1203,4 +1054,7 @@
     </script>
 </body>
 </html>
+
+
+
 
