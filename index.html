@@ -273,16 +273,16 @@
                     if (validUser) {
                         // Check for the normalized userId key
                         if (!validUser.userId || validUser.userId.trim() === '') {
-                           errorMessage.textContent = 'Login failed: User data is incomplete in sheet.';
-                           loginButton.textContent = 'Sign In';
-                           loginButton.disabled = false;
-                           return; // Stop the login process
+                            errorMessage.textContent = 'Login failed: User data is incomplete in sheet.';
+                            loginButton.textContent = 'Sign In';
+                            loginButton.disabled = false;
+                            return; // Stop the login process
                         }
 
                         // Store the essential user info in session storage.
                         const userToStore = {
-                           name: validUser.Username,
-                           userId: validUser.userId
+                            name: validUser.Username,
+                            userId: validUser.userId
                         };
                         sessionStorage.setItem('loggedInUser', JSON.stringify(userToStore));
                         sessionStorage.setItem('isLoggedIn', 'true');
@@ -306,4 +306,5 @@
     </script>
 </body>
 </html>
+
 
