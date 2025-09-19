@@ -216,13 +216,27 @@
             const parseCSV = (text) => {
                 const lines = text.trim().replace(/\r\n?/g, '\n').split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
-                return lines.slice(1).map(line => {
+                const usersData = lines.slice(1).map(line => {
                     const values = line.split(',').map(v => v.trim());
                     let obj = {};
                     headers.forEach((header, i) => {
                         obj[header] = values[i];
                     });
                     return obj;
+                });
+
+                // Find the actual header for userId, case-insensitively
+                const userIdHeader = headers.find(h => h.toLowerCase() === 'userid');
+                if (!userIdHeader) {
+                    console.warn("Could not find a 'userId' column in the sheet.");
+                }
+                
+                // Normalize the data to use a consistent 'userId' key
+                return usersData.map(user => {
+                    if (userIdHeader && user[userIdHeader]) {
+                        user.userId = user[userIdHeader]; // Create a consistent key
+                    }
+                    return user;
                 });
             };
 
@@ -257,8 +271,7 @@
                     );
 
                     if (validUser) {
-                        // ** MODIFICATION START **
-                        // Check if the user has a userId, which is crucial for Firestore.
+                        // Check for the normalized userId key
                         if (!validUser.userId || validUser.userId.trim() === '') {
                            errorMessage.textContent = 'Login failed: User data is incomplete in sheet.';
                            loginButton.textContent = 'Sign In';
@@ -272,8 +285,6 @@
                            userId: validUser.userId
                         };
                         sessionStorage.setItem('loggedInUser', JSON.stringify(userToStore));
-                        // ** MODIFICATION END **
-
                         sessionStorage.setItem('isLoggedIn', 'true');
                         
                         // Redirect to the main homepage (index.html).
@@ -295,5 +306,7 @@
     </script>
 </body>
 </html>
+
+
 
 
