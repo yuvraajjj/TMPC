@@ -276,9 +276,9 @@
                         sessionStorage.setItem('loggedInUser', JSON.stringify(userToStore));
                         sessionStorage.setItem('isLoggedIn', 'true');
                         
-                        // Redirect to the main homepage (index.html).
-                        console.log('Login successful! Redirecting to index.html...');
-                        window.location.href = 'index.html';
+                        // Redirect to the main homepage (homepage.html).
+                        console.log('Login successful! Redirecting to homepage.html...');
+                        window.location.href = 'homepage.html';
                     } else {
                         errorMessage.textContent = 'Invalid username or password.';
                         loginButton.textContent = 'Sign In';
@@ -295,5 +295,8 @@
     </script>
 </body>
 </html>
+
+
+
 
 
