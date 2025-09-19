@@ -312,8 +312,8 @@
     <script>
         // Gatekeeper script: Redirect to login if not authenticated
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-           // For this example, we'll bypass this to allow direct access.
-           // window.location.href = 'login.html'; 
+           // Redirect to the login page if the user is not authenticated.
+           window.location.href = 'login.html'; 
         }
     </script>
 
@@ -585,6 +585,7 @@
         let allMovies = [];
         let allSeries = []; 
         let userMap = {}; // To store userId -> name mapping
+        let currentUser = null; // To store the logged-in user's info
         let screeningsData = [
             { 
                 title: "Demon Slayer: Infinity Train", 
@@ -633,7 +634,7 @@
         const closeModalBtn = document.getElementById('close-modal-btn');
 
         // --- Firebase Initialization and Authentication ---
-        let db, auth, userId;
+        let db, auth, firebaseUserId;
         
         const initFirebase = async () => {
             try {
@@ -643,21 +644,18 @@
                 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        userId = user.uid;
-                        userIdDisplay.textContent = `User ID: ${userId}`;
-                        console.log(`Authenticated user with ID: ${userId}`);
-                        console.log('Auth state changed. Trying to update greeting.');
+                        firebaseUserId = user.uid; // Keep track of Firebase UID for Firestore rules
+                        console.log(`Authenticated with Firebase UID: ${firebaseUserId}`);
+                        // Firestore listeners can now be set up
                         setupWatchlistListener();
                         setupReviewsListener();
-                        updateUserGreeting();
                     } else {
-                        userId = null;
-                        console.log("User is not signed in.");
-                        watchlistContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">Authenticating...</p>`;
-                        userGreeting.classList.add('hidden');
+                        firebaseUserId = null;
+                        console.log("User is not signed in to Firebase.");
                     }
                 });
 
+                // We still sign in to Firebase to interact with Firestore
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
@@ -669,11 +667,11 @@
         };
 
         // --- Firestore Functions ---
-        const getWatchlistCollectionRef = () => collection(db, `/artifacts/${appId}/users/${userId}/watchlist`);
+        const getWatchlistCollectionRef = () => collection(db, `/artifacts/${appId}/users/${firebaseUserId}/watchlist`);
         const getReviewsCollectionRef = () => collection(db, `/artifacts/${appId}/public/data/reviews`);
         
         const addMovieToWatchlist = async (movie) => {
-            if (!userId) return console.error("User not authenticated.");
+            if (!firebaseUserId) return console.error("User not authenticated with Firebase.");
             try {
                 await setDoc(doc(getWatchlistCollectionRef(), movie.title), {
                     title: movie.title || null,
@@ -687,7 +685,7 @@
         };
 
         const removeMovieFromWatchlist = async (movieId) => {
-            if (!userId) return console.error("User not authenticated.");
+            if (!firebaseUserId) return console.error("User not authenticated with Firebase.");
             try {
                 await deleteDoc(doc(getWatchlistCollectionRef(), movieId));
             } catch (e) {
@@ -696,7 +694,7 @@
         };
         
         const setupWatchlistListener = () => {
-            if (!userId) return;
+            if (!firebaseUserId) return;
             onSnapshot(getWatchlistCollectionRef(), (snapshot) => {
                 const movies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderWatchlist(movies, watchlistContainer);
@@ -708,15 +706,14 @@
 
         // --- New Firestore Review Functions ---
         const postReview = async (reviewData) => {
-            if (!userId) return;
+            if (!currentUser || !firebaseUserId) return;
             try {
-                const userName = userMap[userId] || 'Anonymous';
                 await addDoc(getReviewsCollectionRef(), {
                     ...reviewData,
-                    userId: userId,
-                    userName: userName,
+                    userId: currentUser.userId, // Student ID
+                    userName: currentUser.name, // Student Name
                     timestamp: serverTimestamp(),
-                    likes: [], // Initialize likes as an empty array
+                    likes: [],
                     comments: []
                 });
                 reviewForm.reset();
@@ -726,23 +723,18 @@
         };
         
         const likeReview = async (reviewId) => {
-            if (!userId) return;
+            if (!currentUser || !firebaseUserId) return;
             const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
             try {
                 const reviewDoc = await getDoc(reviewRef);
                 if (reviewDoc.exists()) {
                     const reviewData = reviewDoc.data();
                     const likes = reviewData.likes || [];
-                    if (likes.includes(userId)) {
-                        // User has already liked, so remove the like
-                        await updateDoc(reviewRef, {
-                            likes: arrayRemove(userId)
-                        });
+                    // Use the student ID for likes to keep it consistent
+                    if (likes.includes(currentUser.userId)) {
+                        await updateDoc(reviewRef, { likes: arrayRemove(currentUser.userId) });
                     } else {
-                        // User has not liked yet, so add the like
-                        await updateDoc(reviewRef, {
-                            likes: arrayUnion(userId)
-                        });
+                        await updateDoc(reviewRef, { likes: arrayUnion(currentUser.userId) });
                     }
                 }
             } catch (e) {
@@ -751,14 +743,13 @@
         };
 
         const addCommentToReview = async (reviewId, commentText) => {
-            if (!userId || !commentText.trim()) return;
+            if (!currentUser || !firebaseUserId || !commentText.trim()) return;
             const reviewRef = doc(db, `/artifacts/${appId}/public/data/reviews/${reviewId}`);
             try {
-                const userName = userMap[userId] || 'Anonymous';
                 await updateDoc(reviewRef, {
                     comments: arrayUnion({
-                        userId: userId,
-                        userName: userName,
+                        userId: currentUser.userId,
+                        userName: currentUser.name,
                         text: commentText,
                         timestamp: serverTimestamp()
                     })
@@ -779,7 +770,6 @@
                 reviewsContainer.innerHTML = `<p class="text-center text-gray-400">Error loading reviews.</p>`;
             });
         };
-
 
         // --- Data Fetching & Parsing ---
         const parseCSV = (text) => {
@@ -819,15 +809,11 @@
                 if (usersCsv) {
                     const users = parseCSV(usersCsv);
                     users.forEach(user => {
-                        // CODE FIX: Swap key and value to match the spreadsheet structure.
                         // The spreadsheet has the ID in the 'Username' column and the name in the 'userId' column.
                         if (user.Username && user.userId) {
                             userMap[user.Username] = user.userId;
                         }
                     });
-                     console.log("User map created:", userMap);
-                     console.log('User map loaded. Trying to update greeting.');
-                     updateUserGreeting(); // Update greeting after map is loaded
                 }
 
                 allMovies = parseCSV(movieCsv).map(m => ({ ...m, type: 'movie' }));
@@ -846,13 +832,12 @@
         
         // --- UI Rendering Functions ---
         const updateUserGreeting = () => {
-            console.log(`Attempting to update greeting. Current userId: '${userId}'. Do we have a name for this user?`, userMap[userId]);
-            if (userId && userMap[userId]) {
-                console.log('SUCCESS: Found user name. Displaying greeting.');
-                userGreeting.textContent = `Hello, ${userMap[userId]}!`;
+            if (currentUser && currentUser.name) {
+                userGreeting.textContent = `Hello, ${currentUser.name}!`;
                 userGreeting.classList.remove('hidden');
+                userIdDisplay.textContent = `User ID: ${currentUser.userId}`;
             } else {
-                console.log('FAILURE: Could not find a name for the current userId in the user map.');
+                 console.log('Could not find user info to display greeting.');
             }
         };
 
@@ -991,16 +976,18 @@
             const card = document.createElement('div');
             card.className = 'review-card p-4 rounded-lg';
             const likes = review.likes || [];
-            const userHasLiked = likes.includes(userId);
+            // Check if the current logged-in user (using their student ID) has liked this review
+            const userHasLiked = currentUser && likes.includes(currentUser.userId);
 
             const ratingStars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
             const timestamp = review.timestamp ? new Date(review.timestamp.seconds * 1000).toLocaleString() : 'Just now';
-            const reviewerName = review.userName || review.userId;
+            // Use the stored userName, which could be from any user
+            const reviewerName = userMap[review.userId] || review.userName || review.userId;
 
             let commentsHTML = '<div class="mt-4 space-y-2">';
             if(review.comments && review.comments.length > 0) {
                  review.comments.forEach(comment => {
-                     const commenterName = comment.userName || comment.userId;
+                     const commenterName = userMap[comment.userId] || comment.userName || comment.userId;
                      commentsHTML += `
                          <div class="bg-gray-700 p-2 rounded-md">
                              <p class="text-sm text-gray-300 break-words">${comment.text}</p>
@@ -1044,7 +1031,6 @@
 
             return card;
         };
-
         
         // --- Video Player Functions ---
         const showVideoModal = (url) => {
@@ -1091,8 +1077,20 @@
         
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Retrieve user info from session storage first
+            const loggedInUserString = sessionStorage.getItem('loggedInUser');
+            if (loggedInUserString) {
+                try {
+                    currentUser = JSON.parse(loggedInUserString);
+                } catch(e) {
+                    console.error("Failed to parse user data from session storage.", e);
+                    window.location.href = 'login.html'; // Corrupted data, force re-login
+                }
+            }
+            
             initFirebase();
             loadContent();
+            updateUserGreeting(); // Call this immediately
             showPage('movies');
             
             searchInput.addEventListener('keyup', (event) => {
@@ -1110,7 +1108,6 @@
                 if (movieName && rating && reviewText) {
                     postReview({ movieName, rating: parseInt(rating), reviewText });
                 } else {
-                    // Replaced alert with a more modern approach if needed, but alert is fine for simple validation.
                     console.log('Please fill out all fields.');
                 }
             });
@@ -1146,4 +1143,3 @@
     </script>
 </body>
 </html>
-
